@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard BCM ปี 2569 | แผนปฏิบัติการบริหารความต่อเนื่องทางธุรกิจ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --navy:#1a2942; --navy2:#243b5e; --orange:#f7941d; --orange-soft:#fff3e2;
+  --bg:#f4f6fa; --card:#ffffff; --line:#e3e8f0; --text:#2b3445; --muted:#7a8699;
+  --green:#1e9e6a; --green-bg:#e6f7ef; --amber:#d9920b; --amber-bg:#fdf3dd;
+  --red:#d64545; --red-bg:#fdeaea; --blue:#2e6fd0; --blue-bg:#e9f1fc;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);font-size:15px}
+.wrap{max-width:1280px;margin:0 auto;padding:0 20px 48px}
+
+/* Header */
+header{background:linear-gradient(120deg,var(--navy) 0%,var(--navy2) 70%,#2f4d7a 100%);color:#fff;padding:26px 0 22px;border-bottom:4px solid var(--orange)}
+.hrow{max-width:1280px;margin:0 auto;padding:0 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px}
+.htitle h1{font-size:1.45rem;font-weight:700;letter-spacing:.2px}
+.htitle p{font-size:.92rem;opacity:.78;margin-top:3px}
+.badge-iso{display:inline-block;background:rgba(247,148,29,.18);border:1px solid rgba(247,148,29,.55);color:#ffc97e;font-size:.75rem;padding:2px 10px;border-radius:20px;margin-top:8px;font-weight:600}
+.hctrl{display:flex;align-items:center;gap:10px}
+.hctrl label{font-size:.85rem;opacity:.85}
+select#monthSel{font-family:'Sarabun';font-size:.95rem;font-weight:600;padding:8px 14px;border-radius:8px;border:none;background:#fff;color:var(--navy);cursor:pointer}
+.asof{font-size:.78rem;opacity:.7;text-align:right;margin-top:6px}
+
+/* KPI cards */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin:22px 0}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent,var(--navy))}
+.kpi .lbl{font-size:.8rem;color:var(--muted);font-weight:600}
+.kpi .val{font-size:1.9rem;font-weight:700;color:var(--navy);margin-top:4px;line-height:1.15}
+.kpi .val small{font-size:.95rem;font-weight:600;color:var(--muted)}
+.kpi .sub{font-size:.78rem;color:var(--muted);margin-top:4px}
+.kpi.good .val{color:var(--green)} .kpi.bad .val{color:var(--red)} .kpi.warn .val{color:var(--amber)}
+
+/* Cards */
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin-bottom:18px}
+.card h2{font-size:1.02rem;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.card h2::before{content:'';width:8px;height:8px;border-radius:2px;background:var(--orange);display:inline-block}
+.card .desc{font-size:.8rem;color:var(--muted);margin-bottom:12px}
+.grid2{display:grid;grid-template-columns:1.15fr .85fr;gap:18px}
+@media(max-width:980px){.grid2{grid-template-columns:1fr}}
+.chartbox{position:relative;height:330px}
+
+/* Table */
+table.acts{width:100%;border-collapse:collapse;font-size:.88rem}
+table.acts th{background:var(--navy);color:#fff;font-weight:600;padding:9px 10px;text-align:center;font-size:.8rem;position:sticky;top:0}
+table.acts th:first-child{border-radius:8px 0 0 0;text-align:left}
+table.acts th:last-child{border-radius:0 8px 0 0}
+table.acts td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:middle;text-align:center}
+table.acts td.name{text-align:left;font-weight:500;max-width:380px}
+table.acts tr.main{cursor:pointer;transition:background .15s}
+table.acts tr.main:hover{background:#f6f9ff}
+.caret{display:inline-block;width:18px;height:18px;line-height:18px;text-align:center;border-radius:4px;background:var(--blue-bg);color:var(--blue);font-size:.7rem;margin-right:8px;transition:transform .2s;flex:none}
+tr.open .caret{transform:rotate(90deg)}
+.nm{display:flex;align-items:flex-start}
+.outp{font-size:.74rem;color:var(--muted);margin-top:2px;font-weight:400}
+.pbar{background:#edf0f5;border-radius:20px;height:9px;width:110px;margin:0 auto;overflow:hidden}
+.pbar i{display:block;height:100%;border-radius:20px;background:var(--blue)}
+.pcell{display:flex;flex-direction:column;align-items:center;gap:3px}
+.pcell span{font-size:.78rem;font-weight:600}
+.chip{display:inline-block;padding:3px 11px;border-radius:20px;font-size:.74rem;font-weight:700;white-space:nowrap}
+.chip.g{background:var(--green-bg);color:var(--green)}
+.chip.a{background:var(--amber-bg);color:var(--amber)}
+.chip.r{background:var(--red-bg);color:var(--red)}
+.chip.n{background:#eef0f4;color:var(--muted)}
+.chip.b{background:var(--blue-bg);color:var(--blue)}
+.wchip{background:var(--orange-soft);color:#b06a07;font-weight:700;border-radius:6px;padding:2px 8px;font-size:.78rem}
+
+/* Sub rows / gantt */
+tr.sub td{background:#fafbfe;padding:0}
+.subwrap{padding:12px 16px 16px 44px}
+.gtitle{font-size:.78rem;font-weight:700;color:var(--muted);margin-bottom:8px}
+table.gantt{width:100%;border-collapse:collapse;font-size:.8rem}
+table.gantt th{font-size:.68rem;color:var(--muted);font-weight:600;padding:3px 2px;text-align:center;background:transparent;width:34px}
+table.gantt th.gname{text-align:left;width:auto}
+table.gantt td{padding:4px 2px;border-bottom:1px dashed #e8ecf3}
+table.gantt td.gname{text-align:left;color:var(--text);padding-right:10px}
+.gcell{height:14px;border-radius:3px}
+.gcell.on{background:linear-gradient(180deg,#f7a93f,#f08c00)}
+.gcell.now{outline:2px solid var(--navy);outline-offset:-1px}
+.note{margin-top:10px;font-size:.8rem;background:var(--blue-bg);border-left:3px solid var(--blue);padding:8px 12px;border-radius:0 6px 6px 0;color:#274b80}
+.issue{margin-top:8px;font-size:.8rem;background:var(--amber-bg);border-left:3px solid var(--amber);padding:8px 12px;border-radius:0 6px 6px 0;color:#7c5705}
+
+/* legend + footer */
+.legend{display:flex;gap:18px;flex-wrap:wrap;font-size:.78rem;color:var(--muted);margin-top:10px}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+footer{font-size:.78rem;color:var(--muted);text-align:center;margin-top:26px;line-height:1.7}
+.src-tag{display:inline-block;font-size:.72rem;background:#eef0f4;border-radius:6px;padding:2px 10px;margin-left:6px;color:var(--muted)}
+@media print{.hctrl{display:none}body{background:#fff}.card{break-inside:avoid}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hrow">
+    <div class="htitle">
+      <h1>Dashboard แผนปฏิบัติการบริหารความต่อเนื่องทางธุรกิจ (BCM)</h1>
+      <p>ปีงบประมาณ 2569 · ระบบบริหารความต่อเนื่องทางธุรกิจ (BCMS)</p>
+      <span class="badge-iso">ISO 22301</span>
+    </div>
+    <div class="hctrl">
+      <div>
+        <label for="monthSel">ข้อมูล ณ เดือน</label><br>
+        <select id="monthSel"></select>
+        <div class="asof" id="srcInfo">แหล่งข้อมูล: แผนปฏิบัติการ BCM ปี 2569</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- KPI -->
+  <div class="kpis" id="kpis"></div>
+
+  <!-- Charts -->
+  <div class="grid2">
+    <div class="card">
+      <h2>ความก้าวหน้าสะสมรายเดือน (S-Curve)</h2>
+      <div class="desc">เป้าหมายสะสมถ่วงน้ำหนักตามแผน เทียบกับผลการดำเนินงานจริง (ร้อยละ)</div>
+      <div class="chartbox"><canvas id="scurve"></canvas></div>
+    </div>
+    <div class="card">
+      <h2>ความก้าวหน้ารายกิจกรรม</h2>
+      <div class="desc" id="barDesc">เป้าหมาย vs ผลงาน ของแต่ละกิจกรรม (ร้อยละของกิจกรรม)</div>
+      <div class="chartbox"><canvas id="actbar"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Activity table -->
+  <div class="card">
+    <h2>รายละเอียดกิจกรรมตามแผนปฏิบัติการ (11 กิจกรรม)</h2>
+    <div class="desc">คลิกที่แถวกิจกรรมเพื่อดูกิจกรรมย่อยและช่วงเวลาดำเนินการ (Gantt) · เดือนที่เลือกถูกเน้นกรอบ</div>
+    <div style="overflow-x:auto">
+    <table class="acts">
+      <thead><tr>
+        <th>กิจกรรม / ผลผลิต</th><th>ถ่วงน้ำหนัก</th><th>เป้าหมาย<br>(% กิจกรรม)</th>
+        <th>ผลงาน<br>(% กิจกรรม)</th><th>ความก้าวหน้า</th><th>สถานะเทียบแผน</th><th>สถานะงาน</th>
+      </tr></thead>
+      <tbody id="actbody"></tbody>
+    </table>
+    </div>
+    <div class="legend">
+      <span><i style="background:var(--green-bg);border:1px solid var(--green)"></i>ตามแผน / เร็วกว่าแผน</span>
+      <span><i style="background:var(--amber-bg);border:1px solid var(--amber)"></i>ล่าช้าเล็กน้อย (&lt; 10 จุด)</span>
+      <span><i style="background:var(--red-bg);border:1px solid var(--red)"></i>ล่าช้า (≥ 10 จุด)</span>
+      <span><i style="background:#eef0f4"></i>ยังไม่ถึงกำหนด / รอรายงานผล</span>
+      <span><i style="background:linear-gradient(180deg,#f7a93f,#f08c00)"></i>ช่วงดำเนินการตามแผน</span>
+    </div>
+  </div>
+
+  <footer>
+    แผนปฏิบัติการบริหารความต่อเนื่องทางธุรกิจ ปี 2569 (V3) · เป้าหมายรวมทั้งปี = ร้อยละ 100 (ถ่วงน้ำหนัก 11 กิจกรรม)<br>
+    ผลงานจริงอัปเดตจากไฟล์ <code>data/bcm_actual.csv</code> (Microsoft Lists → GitHub) · จัดทำเพื่อการติดตามและสื่อสารภายในองค์กร
+  </footer>
+</div>
+
+<script>
+/* ================= ข้อมูลแผน (จาก Excel sheet 1 และ 3) ================= */
+const MONTHS=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+const YEAR_BE=2569;
+// plan: เป้าหมายสะสมรายเดือนของกิจกรรม (% ของกิจกรรม, null = ยังไม่เริ่ม/คงค่าก่อนหน้า)
+const ACTIVITIES=[
+ {id:1, w:5,  name:'การทบทวนคณะผู้บริหาร/คณะทำงานในระบบ BCMS และผู้ประสานงาน',
+  output:'รายชื่อคณะผู้บริหาร/คณะทำงานในระบบ BCMS และผู้ประสานงาน',
+  plan:[100,null,null,null,null,null,null,null,null,null,null,null],
+  subs:[['1.1 ทบทวนรายชื่อคณะผู้บริหาร/คณะทำงานจากสายงานที่เกี่ยวข้อง/DCO','100000000000'],
+        ['1.2 จัดทำบันทึกแต่งตั้งเสนอ ผวก.','100000000000'],
+        ['1.3 ขอรายชื่อผู้ประสานงาน BCM ประจำหน่วยงาน และแผนการฝึกซ้อมแผนฯ','100000000000'],
+        ['1.4 ทบทวนรายชื่อผู้ตรวจประเมินภายใน (IA)','100000000000']]},
+ {id:2, w:10, name:'การวางแผนงานระบบ BCMS เช่น Scope, Objective ประเด็นปรับปรุง และการฝึกซ้อมแผนปี 2569 โดยหน่วยงาน',
+  output:'มีการดำเนินงาน และเอกสารตามระบบ BCMS',
+  plan:[10,15,20,30,40,50,70,85,90,100,null,null],
+  subs:[['2.1 ทบทวน Scope, Objective ประเด็นปรับปรุง ประเด็นกฎหมายและข้อกำหนด','100000000000'],
+        ['2.2 จัดทำแผนการดำเนินงานเพื่อบรรลุวัตถุประสงค์','100000000000'],
+        ['2.3 จัดประชุมคณะทำงานและคณะผู้บริหาร BCMS ครั้งที่ 1','010000000000'],
+        ['2.4 แจ้งและติดตามการดำเนินงานตามตัวชี้วัดจากหน่วยงานที่เกี่ยวข้อง','001111111100'],
+        ['2.5 ส่ง MN ขอวันฝึกซ้อมแผนจากหน่วยงาน','001000000000'],
+        ['2.6 ติดตามและสังเกตการณ์การฝึกซ้อม','001111110000'],
+        ['2.7 รวบรวมและสรุปผลการฝึกซ้อม','000000001100']]},
+ {id:3, w:10, name:'การอบรมและการให้ความรู้ด้านการบริหารความต่อเนื่องทางธุรกิจ เช่น การทำ BIA RA จัดทำแผนฯ',
+  output:'บุคลากรกลุ่มเป้าหมายเข้ารับการอบรมและมีความรู้ด้าน BCM',
+  plan:[5,10,20,25,30,40,50,60,70,80,90,100],
+  subs:[['3.1 กำหนดกลุ่มเป้าหมายและจำนวนผู้เข้ารับการอบรม','010000000000'],
+        ['3.2 จัดทำบันทึกขออนุมัติโครงการ','001000000000'],
+        ['3.3 แจ้งหน่วยงานขอรายชื่อ/ประสานงานการฝึกอบรม','001000000000'],
+        ['3.4 ดำเนินการอบรม','000110000000'],
+        ['3.5 จัดทำ Single Page เผยแพร่ผ่าน Have a good day','111111111111']]},
+ {id:4, w:15, name:'การดำเนินการวิเคราะห์ วางแผน และทดสอบ',
+  output:'ผล BIA/RA กลยุทธ์ ทรัพยากร Supplier ตัวชี้วัด และแผนความต่อเนื่องทางธุรกิจ ปี 2570',
+  plan:[null,null,null,15,30,45,60,80,100,null,null,null],
+  subs:[['4.1 ทบทวนเกณฑ์ประเมินความเสี่ยงและเอกสารในระบบ BCM','000100000000'],
+        ['4.2 ทบทวน BIA/RA กลยุทธ์ ทรัพยากร Supplier การฝึกซ้อมแผน และตัวชี้วัด','000011000000'],
+        ['4.3 ติดตามและ Feedback ผลการทบทวน BIA/RA ฯ','000001000000'],
+        ['4.4 ประชุมคณะผู้บริหาร GRC เสนอ BIA RA BCS','000000100000'],
+        ['4.5 ทบทวนแผน BCP หลังจากเห็นชอบ RTO MTPD','000000110000'],
+        ['4.6 ติดตาม BCP ปี 2570 จากหน่วยงาน','000000011000'],
+        ['4.7 นำเสนอขอความเห็นชอบ BCP - TMC GRC / อนุ ESGRC / Board','000000001000']]},
+ {id:5, w:10, name:'การติดตามและประเมินผล',
+  output:'รายงานความก้าวหน้าตัวชี้วัด OFI/NC ต่อคณะผู้บริหาร BCMS · การตรวจประเมินภายในและขอการรับรอง ISO 22301',
+  plan:[null,null,null,15,30,45,60,70,80,90,100,null],
+  subs:[['5.1 ติดตามการแก้ไขความไม่สอดคล้อง/OFI จากการตรวจประเมินของปี 2568','000111110000'],
+        ['5.2 เตรียมความพร้อมรับการตรวจประเมินและประชุมชี้แจงต่อหน่วยงานรับตรวจ','000000110000'],
+        ['5.3 ตรวจประเมินภายใน','000000001000'],
+        ['5.4 ติดตามความก้าวหน้าในระบบ BCMS: ตัวชี้วัด OFI/NC รายงานต่อคณะผู้บริหาร','000000011100'],
+        ['5.5 จัดประชุมคณะทำงาน/คณะผู้บริหาร ครั้งที่ 2','000000001100'],
+        ['5.6 ตรวจประเมินเพื่อขอการรับรอง ISO 22301','000000000110']]},
+ {id:6, w:10, name:'การถอดบทเรียนเหตุการณ์น้ำท่วมหาดใหญ่',
+  output:'ผลการถอดบทเรียน เพื่อใช้เป็นปัจจัยนำเข้าในการฝึกซ้อมสถานการณ์ใหญ่',
+  plan:[null,15,50,75,100,null,null,null,null,null,null,null],
+  subs:[['6.1 ออกแบบ จัดทำหลักการและแนวทางการถอดบทเรียนเหตุการณ์','011100000000'],
+        ['6.2 จัดทำบันทึกอนุมัติค่าใช้จ่าย','000100000000'],
+        ['6.3 จัดประชุมเพื่อแลกเปลี่ยนเรียนรู้ถอดบทเรียนเหตุการณ์น้ำท่วมหาดใหญ่','000010000000']]},
+ {id:7, w:10, name:'การจัดจ้างเพื่อตรวจประเมินภายใน',
+  output:'รายงานผลการตรวจประเมินภายใน',
+  plan:[null,null,null,null,null,20,40,60,null,100,null,null],
+  subs:[['7.1 จัดทำบันทึกขอความเห็นชอบการจัดจ้าง และแต่งตั้งคณะกรรมการ','000001000000'],
+        ['7.2 จัดทำแผนจัดซื้อจัดจ้าง และประกาศแผน','000001000000'],
+        ['7.3 บันทึกขอความเห็นชอบ TOR ขออนุมัติราคากลาง','000000100000'],
+        ['7.4 ดำเนินการจ้าง และทำสัญญา','000000010000'],
+        ['7.5 ตรวจรับงานจ้าง','000000000100'],
+        ['7.6 รวบรวมเอกสารส่งตรวจจ่าย','000000000100']]},
+ {id:8, w:10, name:'การจัดจ้างเพื่อขอการรับรองตามมาตรฐาน ISO 22301',
+  output:'รายงานผลการตรวจประเมินเพื่อขอการรับรองตามมาตรฐาน ISO 22301',
+  plan:[null,null,10,null,null,null,null,40,60,70,100,null],
+  subs:[['8.1 ประสานงานผู้ตรวจประเมินเพื่อขอการรับรอง กำหนดวัน / ราคา','001000000000'],
+        ['8.2 จัดทำบันทึกขอความเห็นชอบการจัดจ้างเพื่อตรวจติดตาม และแต่งตั้งคณะกรรมการ','000000011000'],
+        ['8.3 จัดทำแผนจัดซื้อจัดจ้าง และประกาศแผน','000000011000'],
+        ['8.4 บันทึกขอความเห็นชอบ TOR ขออนุมัติราคากลาง','000000011000'],
+        ['8.5 ดำเนินการจ้าง และทำสัญญา','000000001100'],
+        ['8.6 ตรวจรับงานจ้าง','000000000010'],
+        ['8.7 รวบรวมเอกสารส่งตรวจจ่าย','000000000010']]},
+ {id:9, w:10, name:'การฝึกซ้อมสถานการณ์ใหญ่',
+  output:'รายงานผลการฝึกซ้อมสถานการณ์ใหญ่',
+  plan:[null,null,15,30,45,60,70,80,90,100,null,null],
+  subs:[['9.1 ออกแบบแนวทางการฝึกซ้อม','001110000000'],
+        ['9.2 จัดทำสถานการณ์สำหรับการฝึกซ้อม และแต่งตั้งคณะทำงานฝึกซ้อม','000011000000'],
+        ['9.3 ประสานงาน ทำความเข้าใจกับผู้ที่มีส่วนเกี่ยวข้องกับการฝึกซ้อม','000001100000'],
+        ['9.4 ดำเนินการฝึกซ้อม','000000011000'],
+        ['9.5 สรุปผลการฝึกซ้อม','000000001100']]},
+ {id:10,w:5,  name:'การสื่อสารและทบทวนการบริหารความต่อเนื่องทางธุรกิจและความพร้อมใช้ของระบบ ให้กับผู้มีส่วนได้ส่วนเสีย',
+  output:'รายงานผลการทบทวนกระบวนการฯ การสื่อสาร และผลการประเมินการสื่อสาร BCMS',
+  plan:[null,null,10,20,30,40,50,60,70,80,90,100],
+  subs:[['10.1 ทบทวนการระบุกลุ่มผู้มีส่วนได้ส่วนเสียที่เกี่ยวข้อง พร้อมวิเคราะห์','001000000000'],
+        ['10.2 กำหนดแนวทาง ตัวชี้วัดประเมินประสิทธิผลการรับรู้กระบวนการ','000100000000'],
+        ['10.3 ดำเนินการสื่อสาร ถ่ายทอดกระบวนการตามแนวทางที่กำหนด','000011111100'],
+        ['10.4 ประเมินตัวชี้วัดประสิทธิผลกระบวนการ และประเด็นปัญหาที่ผ่านมา','000000111111'],
+        ['10.5 รายงานผลการทบทวนกระบวนการฯ ต่อคณะผู้บริหาร','000000000111']]},
+ {id:11,w:5,  name:'ทบทวนแผนที่เกี่ยวข้องกับการจัดการเหตุฉุกเฉินและภาวะวิกฤตของทุกหน่วยงานใน กฟน.',
+  output:'แผนที่เกี่ยวข้องกับการจัดการเหตุฉุกเฉินและภาวะวิกฤตของหน่วยงาน',
+  plan:[15,35,60,75,100,null,null,null,null,null,null,null],
+  subs:[['11.1 รวบรวมสถานะปัจจุบันของแผนที่หน่วยงานมีทั้งหมด','110000000000'],
+        ['11.2 จัดทำ MN แจ้งหน่วยงานทบทวนแผน','001000000000'],
+        ['11.3 รวบรวมแผนปัจจุบันของหน่วยงานทั้งหมด และสรุปแผน','001110000000']]}
+];
+
+/* ================= ผลงานจริง (โหลดจาก CSV) =================
+   รูปแบบไฟล์ data/bcm_actual.csv (export จาก SharePoint List):
+   ActivityID,SubID,Month,Actual,Status,Note,Issue
+   - แถวหลัก (SubID ว่าง): ActivityID 1-11 | Month 1-12 | Actual % สะสม (0-100)
+   - แถวกิจกรรมย่อย (SubID เช่น 2.4): สถานะปัจจุบัน ไม่ผูกกับเดือน
+   - Status: ยังไม่ดำเนินการ / อยู่ระหว่างดำเนินการ / เสร็จสิ้น
+   - Note: ความคืบหน้า | Issue: ปัญหาและแนวทางแก้ไข                      */
+let ACTUAL={};   // ACTUAL[id][m] = {v,note,issue,st}
+let SUB={};      // SUB['2.4'] = {st,note,issue} สถานะปัจจุบันของกิจกรรมย่อย
+
+function planAt(a,m){ // เป้าหมายสะสม ณ เดือน m (0-11) แบบ carry-forward
+  let v=0; for(let i=0;i<=m;i++){ if(a.plan[i]!=null)v=a.plan[i]; } return v;
+}
+function actualAt(id,m){ // ผลงานสะสมล่าสุด ≤ เดือน m
+  let r=null; const rec=ACTUAL[id]||{};
+  for(let i=0;i<=m;i++){ if(rec[i]!=null&&rec[i].v!=null)r=rec[i].v; } return r;
+}
+function lastInfo(id,m,key){
+  let r=null; const rec=ACTUAL[id]||{};
+  for(let i=0;i<=m;i++){ if(rec[i]&&rec[i][key])r=rec[i][key]; } return r;
+}
+function overall(m,useActual){
+  let s=0,has=false;
+  for(const a of ACTIVITIES){
+    const v=useActual?actualAt(a.id,m):planAt(a,m);
+    if(useActual&&v==null)continue;
+    has=true; s+=a.w/100*(v??0);
+  }
+  return useActual&&!has?null:s;
+}
+
+function parseCSV(t){
+  const rows=[];let row=[],cur='',q=false;
+  for(let i=0;i<t.length;i++){const ch=t[i];
+    if(q){ if(ch==='"'){ if(t[i+1]==='"'){cur+='"';i++;} else q=false; } else cur+=ch; }
+    else if(ch==='"')q=true;
+    else if(ch===','){row.push(cur);cur='';}
+    else if(ch==='\n'||ch==='\r'){ if(cur!==''||row.length){row.push(cur);rows.push(row);row=[];cur='';} }
+    else cur+=ch; }
+  if(cur!==''||row.length){row.push(cur);rows.push(row);}
+  return rows;
+}
+const THM={'ม.ค.':1,'ก.พ.':2,'มี.ค.':3,'เม.ย.':4,'พ.ค.':5,'มิ.ย.':6,'ก.ค.':7,'ส.ค.':8,'ก.ย.':9,'ต.ค.':10,'พ.ย.':11,'ธ.ค.':12};
+function loadActual(text){
+  const rows=parseCSV(text.replace(/^﻿/,'')); if(rows.length<2)return false;
+  const h=rows[0].map(x=>x.trim().toLowerCase());
+  const idx=names=>h.findIndex(c=>names.some(n=>c.includes(n)));
+  const iN=idx(['note','หมายเหตุ','ความคืบหน้า']), iI=idx(['issue','ปัญหา']),
+        iS=idx(['status','สถานะ']);
+  let n=0;
+  /* ---- รูปแบบกว้าง (SharePoint List แบบ Compliance): AID + คอลัมน์รายเดือน A_ม.ค.69 ... ---- */
+  const iA=h.findIndex(c=>c==='aid');
+  const monthCols=[]; // [ตำแหน่งคอลัมน์, เดือน 0-11]
+  h.forEach((c,j)=>{const mt=c.match(/^[ad]_(.+)$/);
+    if(mt&&!mt[1].includes('70')){for(const k in THM){if(mt[1].startsWith(k)){monthCols.push([j,THM[k]-1]);break;}}}});
+  if(iA>=0&&monthCols.length){
+    for(let r=1;r<rows.length;r++){const c=rows[r]; if(!c[iA])continue;
+      const ma=(c[iA]||'').trim().match(/^(\d+)\s*-\s*(\d+)$/); if(!ma)continue;
+      const id=parseInt(ma[1]), sx=parseInt(ma[2]);
+      const st=iS>=0?(c[iS]||'').trim():'', note=iN>=0?(c[iN]||'').trim():'', issue=iI>=0?(c[iI]||'').trim():'';
+      if(sx>0){SUB[id+'.'+sx]={st,note,issue}; n++; continue;} // n-02 = กิจกรรมย่อย n.2
+      if(id<1||id>11)continue;
+      ACTUAL[id]=ACTUAL[id]||{}; let lastM=0;
+      for(const [j,mi] of monthCols){let v=(c[j]??'').toString().replace('%','').trim();
+        if(v==='')continue; v=parseFloat(v); if(isNaN(v))continue;
+        if(v<=1.0&&v>0&&!Number.isInteger(v))v*=100;
+        ACTUAL[id][mi]={v,note:'',issue:'',st:''}; if(mi>lastM)lastM=mi; n++;}
+      ACTUAL[id][lastM]=Object.assign(ACTUAL[id][lastM]||{v:null},{note,issue,st});
+    }
+    return n>0;
+  }
+  /* ---- รูปแบบยาว (ของเดิม): ActivityID,SubID,Month,Actual,... ---- */
+  const iId=idx(['activityid','activity_id','กิจกรรม','id']),
+        iM=idx(['month','เดือน']), iV=idx(['actual','ผลงาน','result']),
+        iSub=idx(['subid','รหัสย่อย']);
+  if(iId<0||iM<0||iV<0)return false;
+  for(let r=1;r<rows.length;r++){const c=rows[r]; if(!c[iId])continue;
+    const sub=iSub>=0?(c[iSub]||'').toString().trim():'';
+    if(sub){ // แถวกิจกรรมย่อย: สถานะปัจจุบัน
+      SUB[sub]={st:iS>=0?(c[iS]||'').trim():'',
+                note:iN>=0?(c[iN]||'').trim():'',
+                issue:iI>=0?(c[iI]||'').trim():''};
+      n++; continue;
+    }
+    const id=parseInt(c[iId]); let m=(c[iM]||'').toString().trim();
+    m=THM[m]||parseInt(m); if(!id||!m||id<1||id>11||m<1||m>12)continue;
+    let v=(c[iV]??'').toString().replace('%','').trim();
+    v=v===''?null:parseFloat(v); if(v!=null&&v<=1.0&&v>0&&!Number.isInteger(v))v*=100;
+    ACTUAL[id]=ACTUAL[id]||{};
+    ACTUAL[id][m-1]={v,note:iN>=0?(c[iN]||'').trim():'',issue:iI>=0?(c[iI]||'').trim():'',
+                     st:iS>=0?(c[iS]||'').trim():''};
+    n++;
+  }
+  return n>0;
+}
+
+/* ================= Rendering ================= */
+let curM=5, scurveChart=null, barChart=null, hasActual=false;
+
+function status(a,m){
+  const t=planAt(a,m), v=actualAt(a.id,m);
+  if(t===0)return{cls:'n',txt:'ยังไม่ถึงกำหนด'};
+  if(v==null)return{cls:'b',txt:'รอรายงานผล'};
+  const d=v-t;
+  if(d>=0)return{cls:'g',txt:d>0?'เร็วกว่าแผน':'ตามแผน'};
+  if(d>-10)return{cls:'a',txt:'ล่าช้าเล็กน้อย'};
+  return{cls:'r',txt:'ล่าช้า'};
+}
+const fmt=v=>v==null?'–':(Math.round(v*100)/100).toLocaleString('th-TH');
+const WS_DONE='เสร็จสิ้น',WS_DOING='อยู่ระหว่างดำเนินการ',WS_NOT='ยังไม่ดำเนินการ';
+function workStatus(id,m){return lastInfo(id,m,'st')||'';}
+function wsChip(s){
+  if(s===WS_DONE)return `<span class="chip g">✓ ${WS_DONE}</span>`;
+  if(s===WS_DOING)return `<span class="chip b">⟳ ${WS_DOING}</span>`;
+  if(s===WS_NOT)return `<span class="chip n">○ ${WS_NOT}</span>`;
+  return '<span class="chip n">–</span>';
+}
+
+function renderKPIs(){
+  const t=overall(curM,false), v=overall(curM,true);
+  const d=v==null?null:v-t;
+  let g=0,a=0,r=0,n=0,wd=0,wg=0,wn=0;
+  ACTIVITIES.forEach(x=>{const s=status(x,curM); if(s.cls==='g')g++;else if(s.cls==='a')a++;else if(s.cls==='r')r++;else n++;
+    const w=workStatus(x.id,curM); if(w===WS_DONE)wd++;else if(w===WS_DOING)wg++;else wn++;});
+  const dCls=d==null?'':(d>=0?'good':(d>-5?'warn':'bad'));
+  const dTxt=d==null?'–':((d>=0?'+':'')+fmt(d));
+  document.getElementById('kpis').innerHTML=`
+   <div class="kpi" style="--accent:var(--navy)"><div class="lbl">เป้าหมายสะสม ณ ${MONTHS[curM]} ${YEAR_BE}</div>
+     <div class="val">${fmt(t)}<small> %</small></div><div class="sub">จากเป้าหมายทั้งปี 100%</div></div>
+   <div class="kpi" style="--accent:var(--blue)"><div class="lbl">ผลงานสะสม (ถ่วงน้ำหนัก)</div>
+     <div class="val">${fmt(v)}<small> %</small></div><div class="sub">${v==null?'ยังไม่มีข้อมูลผลงานจริง':'จากรายงานผลการดำเนินงาน'}</div></div>
+   <div class="kpi ${dCls}" style="--accent:${d==null?'var(--muted)':d>=0?'var(--green)':'var(--red)'}"><div class="lbl">ผลต่าง (ผลงาน − เป้าหมาย)</div>
+     <div class="val">${dTxt}<small>${d==null?'':' จุด'}</small></div><div class="sub">${d==null?'รอข้อมูลผลงาน':d>=0?'ดำเนินงานเป็นไปตามแผน':'ต่ำกว่าเป้าหมาย'}</div></div>
+   <div class="kpi" style="--accent:var(--green)"><div class="lbl">สถานะเทียบแผน (11 กิจกรรม)</div>
+     <div class="val" style="font-size:1.25rem;display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
+       <span class="chip g">✓ ${g}</span><span class="chip a">! ${a}</span><span class="chip r">✕ ${r}</span><span class="chip n">○ ${n}</span></div>
+     <div class="sub" style="margin-top:6px">ตามแผน · ล่าช้าเล็กน้อย · ล่าช้า · ยังไม่ถึงกำหนด/รอผล</div></div>
+   <div class="kpi" style="--accent:var(--orange)"><div class="lbl">สถานะงาน (รายงานโดยผู้รับผิดชอบ)</div>
+     <div class="val" style="font-size:1.25rem;display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
+       <span class="chip g">✓ ${wd}</span><span class="chip b">⟳ ${wg}</span><span class="chip n">○ ${wn}</span></div>
+     <div class="sub" style="margin-top:6px">เสร็จสิ้น · อยู่ระหว่างดำเนินการ · ยังไม่ดำเนินการ/ไม่ระบุ</div></div>`;
+}
+
+function renderScurve(){
+  const labels=MONTHS.map(m=>m);
+  const plan=MONTHS.map((_,i)=>Math.round(overall(i,false)*100)/100);
+  const act=MONTHS.map((_,i)=>{ if(!hasActual)return null;
+    let any=false; for(const a of ACTIVITIES){const rec=ACTUAL[a.id]||{}; for(let j=0;j<=i;j++)if(rec[j]&&rec[j].v!=null)any=true;}
+    if(!any)return null; const v=overall(i,true); return v==null?null:Math.round(v*100)/100;});
+  if(scurveChart)scurveChart.destroy();
+  scurveChart=new Chart(document.getElementById('scurve'),{type:'line',
+   data:{labels,datasets:[
+    {label:'เป้าหมายสะสม (แผน)',data:plan,borderColor:'#94a3b8',borderDash:[6,4],pointRadius:3,pointBackgroundColor:'#94a3b8',tension:.3,fill:false},
+    {label:'ผลงานสะสม (จริง)',data:act,borderColor:'#f08c00',backgroundColor:'rgba(240,140,0,.12)',pointRadius:4,pointBackgroundColor:'#f08c00',tension:.3,fill:true,spanGaps:false}]},
+   options:{maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+    plugins:{legend:{labels:{font:{family:'Sarabun',size:12}}},
+     tooltip:{titleFont:{family:'Sarabun'},bodyFont:{family:'Sarabun'},callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y??'–'}%`}},
+     annotation:undefined},
+    scales:{y:{min:0,max:100,ticks:{callback:v=>v+'%',font:{family:'Sarabun'}},grid:{color:'#eef1f6'}},
+     x:{ticks:{font:{family:'Sarabun'}},grid:{display:false}}}}});
+}
+
+function renderBar(){
+  document.getElementById('barDesc').textContent=`เป้าหมาย vs ผลงานของแต่ละกิจกรรม ณ ${MONTHS[curM]} ${YEAR_BE} (ร้อยละของกิจกรรม)`;
+  const labels=ACTIVITIES.map(a=>'กิจกรรมที่ '+a.id);
+  const t=ACTIVITIES.map(a=>planAt(a,curM));
+  const v=ACTIVITIES.map(a=>actualAt(a.id,curM));
+  if(barChart)barChart.destroy();
+  barChart=new Chart(document.getElementById('actbar'),{type:'bar',
+   data:{labels,datasets:[
+    {label:'เป้าหมาย',data:t,backgroundColor:'#c7d2e3',borderRadius:4,barPercentage:.85},
+    {label:'ผลงาน',data:v,backgroundColor:'#f08c00',borderRadius:4,barPercentage:.85}]},
+   options:{indexAxis:'y',maintainAspectRatio:false,
+    plugins:{legend:{labels:{font:{family:'Sarabun',size:12}}},
+     tooltip:{titleFont:{family:'Sarabun'},bodyFont:{family:'Sarabun'},
+      callbacks:{title:items=>{const a=ACTIVITIES[items[0].dataIndex];return 'กิจกรรมที่ '+a.id+' '+a.name.slice(0,60)+(a.name.length>60?'…':'');},
+                 label:c=>` ${c.dataset.label}: ${c.parsed.x??'–'}%`}}},
+    scales:{x:{min:0,max:100,ticks:{callback:v=>v+'%',font:{family:'Sarabun'}},grid:{color:'#eef1f6'}},
+     y:{ticks:{font:{family:'Sarabun',size:11}},grid:{display:false}}}}});
+}
+
+function ganttHTML(a){
+  const done=a.subs.filter(([nm])=>(SUB[nm.split(' ')[0]]||{}).st===WS_DONE).length;
+  const cnt=Object.keys(SUB).length?` · เสร็จสิ้น ${done}/${a.subs.length} รายการ`:'';
+  let h=`<div class="gtitle">กิจกรรมย่อยและช่วงเวลาดำเนินการ${cnt}</div><table class="gantt"><tr><th class="gname"></th>`;
+  MONTHS.forEach((m,i)=>h+=`<th${i===curM?' style="color:var(--navy);font-weight:700"':''}>${m}</th>`);
+  h+='<th style="width:120px">สถานะ</th></tr>';
+  for(const [nm,bits] of a.subs){
+    const s=SUB[nm.split(' ')[0]]||null;
+    const noteLine=s&&(s.note||s.issue)
+      ?`<div style="font-size:.72rem;color:var(--muted);margin-top:2px">${s.note?'▸ '+s.note:''}${s.issue?' <span style="color:var(--amber)">⚠ '+s.issue+'</span>':''}</div>`:'';
+    h+=`<tr><td class="gname">${nm}${noteLine}</td>`;
+    for(let i=0;i<12;i++)h+=`<td><div class="gcell ${bits[i]==='1'?'on':''} ${i===curM?'now':''}"></div></td>`;
+    h+=`<td style="text-align:center">${s&&s.st?wsChip(s.st):'<span class="chip n">–</span>'}</td></tr>`;
+  }
+  h+='</table>';
+  const note=lastInfo(a.id,curM,'note'), issue=lastInfo(a.id,curM,'issue');
+  if(note)h+=`<div class="note"><b>ความคืบหน้า:</b> ${note}</div>`;
+  if(issue)h+=`<div class="issue"><b>ปัญหา/แนวทางแก้ไข:</b> ${issue}</div>`;
+  return `<div class="subwrap">${h}</div>`;
+}
+
+function renderTable(){
+  const tb=document.getElementById('actbody'); tb.innerHTML='';
+  for(const a of ACTIVITIES){
+    const t=planAt(a,curM), v=actualAt(a.id,curM), s=status(a,curM);
+    const pct=v??0;
+    const tr=document.createElement('tr'); tr.className='main';
+    tr.innerHTML=`
+      <td class="name"><div class="nm"><span class="caret">▶</span><div><b>${a.id}.</b> ${a.name}<div class="outp">ผลผลิต: ${a.output}</div></div></div></td>
+      <td><span class="wchip">${a.w}%</span></td>
+      <td>${fmt(t)}%</td><td>${v==null?'–':fmt(v)+'%'}</td>
+      <td><div class="pcell"><div class="pbar"><i style="width:${Math.min(pct,100)}%;background:${s.cls==='r'?'var(--red)':s.cls==='a'?'var(--amber)':'var(--blue)'}"></i></div><span>${v==null?'':fmt(v)+'%'}</span></div></td>
+      <td><span class="chip ${s.cls}">${s.txt}</span></td>
+      <td>${wsChip(workStatus(a.id,curM))}</td>`;
+    const trs=document.createElement('tr'); trs.className='sub'; trs.style.display='none';
+    trs.innerHTML=`<td colspan="7">${ganttHTML(a)}</td>`;
+    tr.addEventListener('click',()=>{const open=trs.style.display!=='none';
+      trs.style.display=open?'none':''; tr.classList.toggle('open',!open);});
+    tb.appendChild(tr); tb.appendChild(trs);
+  }
+}
+
+function renderAll(){renderKPIs();renderScurve();renderBar();renderTable();}
+
+function init(){
+  const sel=document.getElementById('monthSel');
+  MONTHS.forEach((m,i)=>{const o=document.createElement('option');o.value=i;o.textContent=`${m} ${YEAR_BE}`;sel.appendChild(o);});
+  // default month: เดือนล่าสุดที่มีผลงานจริง > ไม่มีก็ใช้เดือนปัจจุบัน (ปี ค.ศ. 2026 = พ.ศ. 2569)
+  let def=null;
+  for(let i=11;i>=0;i--){for(const a of ACTIVITIES){if(ACTUAL[a.id]&&ACTUAL[a.id][i]&&ACTUAL[a.id][i].v!=null){def=i;break;}}if(def!=null)break;}
+  if(def==null){const now=new Date();def=(now.getFullYear()===YEAR_BE-543)?now.getMonth():11;}
+  curM=def; sel.value=def;
+  sel.addEventListener('change',e=>{curM=parseInt(e.target.value);renderAll();});
+  renderAll();
+}
+
+fetch('data/bcm_actual.csv',{cache:'no-store'})
+ .then(r=>{if(!r.ok)throw 0;return r.text();})
+ .then(t=>{hasActual=loadActual(t);
+   document.getElementById('srcInfo').textContent=hasActual
+     ?'แหล่งข้อมูล: แผน BCM 2569 + ผลงานจริง (MS Lists → GitHub)'
+     :'แหล่งข้อมูล: แผนปฏิบัติการ BCM ปี 2569 (ยังไม่มีไฟล์ผลงานจริง)';})
+ .catch(()=>{})
+ .finally(init);
+</script>
+</body>
+</html>
