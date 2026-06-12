@@ -94,6 +94,22 @@ table.gantt td.gname{text-align:left;color:var(--text);padding-right:10px}
 footer{font-size:.78rem;color:var(--muted);text-align:center;margin-top:26px;line-height:1.7}
 .src-tag{display:inline-block;font-size:.72rem;background:#eef0f4;border-radius:6px;padding:2px 10px;margin-left:6px;color:var(--muted)}
 @media print{.hctrl{display:none}body{background:#fff}.card{break-inside:avoid}}
+
+/* Monthly detail popup */
+.modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.5);display:none;align-items:center;justify-content:center;z-index:90;padding:20px}
+.modal{background:#fff;border-radius:14px;max-width:560px;width:100%;padding:22px 24px;box-shadow:0 20px 50px rgba(0,0,0,.25)}
+.md-title{font-weight:700;color:var(--navy);font-size:1rem;line-height:1.5}
+.md-month{font-size:.82rem;color:var(--orange);font-weight:700;margin:4px 0 10px}
+.md-body{font-size:.9rem;line-height:1.7;max-height:50vh;overflow:auto;color:var(--text)}
+.mpct{display:inline-block;background:var(--blue-bg);color:var(--blue);font-weight:700;border-radius:8px;padding:2px 10px;margin-bottom:8px}
+.md-close{margin-top:16px;font-family:'Sarabun';background:var(--navy);color:#fff;border:none;border-radius:8px;padding:8px 22px;cursor:pointer;font-size:.85rem}
+.mcell{cursor:pointer}
+.mv{position:relative;background:var(--blue-bg);color:var(--blue);font-weight:700;border-radius:6px;padding:2px 0;font-size:.75rem;text-align:center}
+.mv:hover{background:#d7e6fa}
+.mv.hasd::after{content:'';position:absolute;top:-3px;right:-3px;width:8px;height:8px;border-radius:50%;background:var(--orange);border:1.5px solid #fff}
+.gcell.gd::after{content:'';position:absolute;top:-4px;right:-3px;width:8px;height:8px;border-radius:50%;background:var(--orange);border:1.5px solid #fff}
+.gcell.gd{position:relative}
+.gcell.gd:hover{outline:2px solid var(--orange)}
 </style>
 </head>
 <body>
@@ -161,6 +177,14 @@ footer{font-size:.78rem;color:var(--muted);text-align:center;margin-top:26px;lin
     ผลงานจริงอัปเดตจากไฟล์ <code>data/bcm_actual.csv</code> (Microsoft Lists → GitHub) · จัดทำเพื่อการติดตามและสื่อสารภายในองค์กร
   </footer>
 </div>
+
+<!-- Popup รายละเอียดรายเดือน -->
+<div class="modal-bg" id="modalBg"><div class="modal">
+  <div id="mdTitle" class="md-title"></div>
+  <div id="mdMonth" class="md-month"></div>
+  <div id="mdBody" class="md-body"></div>
+  <button class="md-close" onclick="document.getElementById('modalBg').style.display='none'">ปิด</button>
+</div></div>
 
 <script>
 /* ================= ข้อมูลแผน (จาก Excel sheet 1 และ 3) ================= */
@@ -268,8 +292,9 @@ const ACTIVITIES=[
    - แถวกิจกรรมย่อย (SubID เช่น 2.4): สถานะปัจจุบัน ไม่ผูกกับเดือน
    - Status: ยังไม่ดำเนินการ / อยู่ระหว่างดำเนินการ / เสร็จสิ้น
    - Note: ความคืบหน้า | Issue: ปัญหาและแนวทางแก้ไข                      */
-let ACTUAL={};   // ACTUAL[id][m] = {v,note,issue,st}
+let ACTUAL={};   // ACTUAL[id][m] = {v,d,note,issue,st} (d = รายละเอียดงานของเดือนนั้น)
 let SUB={};      // SUB['2.4'] = {st,note,issue} สถานะปัจจุบันของกิจกรรมย่อย
+let SUBM={};     // SUBM['2.4'][m] = รายละเอียดงานรายเดือนของกิจกรรมย่อย
 
 function planAt(a,m){ // เป้าหมายสะสม ณ เดือน m (0-11) แบบ carry-forward
   let v=0; for(let i=0;i<=m;i++){ if(a.plan[i]!=null)v=a.plan[i]; } return v;
@@ -313,22 +338,30 @@ function loadActual(text){
   let n=0;
   /* ---- รูปแบบกว้าง (SharePoint List แบบ Compliance): AID + คอลัมน์รายเดือน A_ม.ค.69 ... ---- */
   const iA=h.findIndex(c=>c==='aid');
-  const monthCols=[]; // [ตำแหน่งคอลัมน์, เดือน 0-11]
-  h.forEach((c,j)=>{const mt=c.match(/^[ad]_(.+)$/);
-    if(mt&&!mt[1].includes('70')){for(const k in THM){if(mt[1].startsWith(k)){monthCols.push([j,THM[k]-1]);break;}}}});
+  const monthCols=[]; // [ตำแหน่งคอลัมน์, เดือน 0-11] — รองรับทั้ง "A_ม.ค.69" และ "ม.ค.69"
+  h.forEach((c,j)=>{const name=c.replace(/^[ad]_/,'');
+    if(!c.includes('70')&&!/month/.test(c)){for(const k in THM){if(name.startsWith(k)){monthCols.push([j,THM[k]-1]);break;}}}});
   if(iA>=0&&monthCols.length){
     for(let r=1;r<rows.length;r++){const c=rows[r]; if(!c[iA])continue;
       const ma=(c[iA]||'').trim().match(/^(\d+)\s*-\s*(\d+)$/); if(!ma)continue;
       const id=parseInt(ma[1]), sx=parseInt(ma[2]);
       const st=iS>=0?(c[iS]||'').trim():'', note=iN>=0?(c[iN]||'').trim():'', issue=iI>=0?(c[iI]||'').trim():'';
-      if(sx>0){SUB[id+'.'+sx]={st,note,issue}; n++; continue;} // n-02 = กิจกรรมย่อย n.2
+      if(sx>0){ // n-02 = กิจกรรมย่อย n.2
+        const sid=id+'.'+sx; SUB[sid]={st,note,issue};
+        for(const [j,mi] of monthCols){const raw=(c[j]??'').toString().trim();
+          if(raw!==''){SUBM[sid]=SUBM[sid]||{}; SUBM[sid][mi]=raw;}}
+        n++; continue;}
       if(id<1||id>11)continue;
       ACTUAL[id]=ACTUAL[id]||{}; let lastM=0;
-      for(const [j,mi] of monthCols){let v=(c[j]??'').toString().replace('%','').trim();
-        if(v==='')continue; v=parseFloat(v); if(isNaN(v))continue;
-        if(v<=1.0&&v>0&&!Number.isInteger(v))v*=100;
-        ACTUAL[id][mi]={v,note:'',issue:'',st:''}; if(mi>lastM)lastM=mi; n++;}
-      ACTUAL[id][lastM]=Object.assign(ACTUAL[id][lastM]||{v:null},{note,issue,st});
+      for(const [j,mi] of monthCols){const raw=(c[j]??'').toString().trim();
+        if(raw==='')continue;
+        // ช่องเดือนรองรับ: "45" | "45 - รายละเอียดงาน" | ข้อความอย่างเดียว
+        const pm=raw.match(/^(\d+(?:\.\d+)?)\s*%?\s*(?:[-–:|]\s*)?([\s\S]*)$/);
+        let v=null,d=raw;
+        if(pm){v=parseFloat(pm[1]); d=(pm[2]||'').trim();
+          if(v<=1.0&&v>0&&!Number.isInteger(v))v*=100;}
+        ACTUAL[id][mi]={v,d,note:'',issue:'',st:''}; if(mi>lastM)lastM=mi; n++;}
+      ACTUAL[id][lastM]=Object.assign(ACTUAL[id][lastM]||{v:null,d:''},{note,issue,st});
     }
     return n>0;
   }
@@ -445,15 +478,26 @@ function renderBar(){
 function ganttHTML(a){
   const done=a.subs.filter(([nm])=>(SUB[nm.split(' ')[0]]||{}).st===WS_DONE).length;
   const cnt=Object.keys(SUB).length?` · เสร็จสิ้น ${done}/${a.subs.length} รายการ`:'';
-  let h=`<div class="gtitle">กิจกรรมย่อยและช่วงเวลาดำเนินการ${cnt}</div><table class="gantt"><tr><th class="gname"></th>`;
+  let h=`<div class="gtitle">กิจกรรมย่อยและช่วงเวลาดำเนินการ${cnt} · ช่องที่มีจุดส้ม ● คลิกเพื่อดูรายละเอียดงานของเดือนนั้น</div><table class="gantt"><tr><th class="gname"></th>`;
   MONTHS.forEach((m,i)=>h+=`<th${i===curM?' style="color:var(--navy);font-weight:700"':''}>${m}</th>`);
   h+='<th style="width:120px">สถานะ</th></tr>';
+  // แถวผลการดำเนินงานรายเดือนของกิจกรรมหลัก (คลิกดูรายละเอียด)
+  const rec=ACTUAL[a.id]||{};
+  if(Object.keys(rec).length){
+    h+=`<tr style="background:var(--orange-soft)"><td class="gname" style="font-weight:700">ผลการดำเนินงานรายเดือน (% สะสม)</td>`;
+    for(let i=0;i<12;i++){const e=rec[i];
+      if(e&&(e.v!=null||e.d))
+        h+=`<td><div class="mcell mv ${e.d?'hasd':''}" data-id="${a.id}" data-m="${i}" title="คลิกดูรายละเอียด">${e.v!=null?fmt(e.v):'•'}</div></td>`;
+      else h+='<td></td>';}
+    h+='<td></td></tr>';
+  }
   for(const [nm,bits] of a.subs){
-    const s=SUB[nm.split(' ')[0]]||null;
+    const sid=nm.split(' ')[0], s=SUB[sid]||null, sm=SUBM[sid]||{};
     const noteLine=s&&(s.note||s.issue)
       ?`<div style="font-size:.72rem;color:var(--muted);margin-top:2px">${s.note?'▸ '+s.note:''}${s.issue?' <span style="color:var(--amber)">⚠ '+s.issue+'</span>':''}</div>`:'';
     h+=`<tr><td class="gname">${nm}${noteLine}</td>`;
-    for(let i=0;i<12;i++)h+=`<td><div class="gcell ${bits[i]==='1'?'on':''} ${i===curM?'now':''}"></div></td>`;
+    for(let i=0;i<12;i++){const hasD=!!sm[i];
+      h+=`<td><div class="gcell ${bits[i]==='1'?'on':''} ${i===curM?'now':''} ${hasD?'mcell gd':''}"${hasD?` data-sub="${sid}" data-m="${i}" title="คลิกดูรายละเอียด"`:''}></div></td>`;}
     h+=`<td style="text-align:center">${s&&s.st?wsChip(s.st):'<span class="chip n">–</span>'}</td></tr>`;
   }
   h+='</table>';
@@ -486,6 +530,36 @@ function renderTable(){
 
 function renderAll(){renderKPIs();renderScurve();renderBar();renderTable();}
 
+/* ---- Popup รายละเอียดรายเดือน ---- */
+const esc=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\n/g,'<br>');
+function bindModal(){
+  const bg=document.getElementById('modalBg');
+  bg.addEventListener('click',e=>{if(e.target===bg)bg.style.display='none';});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')bg.style.display='none';});
+  document.addEventListener('click',e=>{
+    const t=e.target.closest('.mcell'); if(!t)return;
+    e.stopPropagation();
+    const m=parseInt(t.dataset.m); let title='',body='';
+    if(t.dataset.sub){
+      const sid=t.dataset.sub;
+      const a=ACTIVITIES.find(x=>x.subs.some(([nm])=>nm.split(' ')[0]===sid));
+      const ent=a?a.subs.find(([nm])=>nm.split(' ')[0]===sid):null;
+      title=ent?ent[0]:('กิจกรรมย่อย '+sid);
+      body=esc((SUBM[sid]||{})[m])||'<i>ไม่มีรายละเอียด</i>';
+    }else{
+      const id=parseInt(t.dataset.id), a=ACTIVITIES.find(x=>x.id===id);
+      title=`${id}. ${a?a.name:''}`;
+      const e2=(ACTUAL[id]||{})[m]||{};
+      body=(e2.v!=null?`<div class="mpct">ผลงานสะสม ${fmt(e2.v)}%</div><br>`:'')
+          +(e2.d?esc(e2.d):'<i>ไม่มีรายละเอียดเพิ่มเติม</i>');
+    }
+    document.getElementById('mdTitle').textContent=title;
+    document.getElementById('mdMonth').textContent=`เดือน ${MONTHS[m]} ${YEAR_BE}`;
+    document.getElementById('mdBody').innerHTML=body;
+    document.getElementById('modalBg').style.display='flex';
+  });
+}
+
 function init(){
   const sel=document.getElementById('monthSel');
   MONTHS.forEach((m,i)=>{const o=document.createElement('option');o.value=i;o.textContent=`${m} ${YEAR_BE}`;sel.appendChild(o);});
@@ -495,6 +569,7 @@ function init(){
   if(def==null){const now=new Date();def=(now.getFullYear()===YEAR_BE-543)?now.getMonth():11;}
   curM=def; sel.value=def;
   sel.addEventListener('change',e=>{curM=parseInt(e.target.value);renderAll();});
+  bindModal();
   renderAll();
 }
 
