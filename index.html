@@ -91,8 +91,9 @@ table.gantt td{padding:5px 2px;border-bottom:1px solid #eef1f5}
 table.gantt tr:nth-child(even) td{background:#f8fafc}
 table.gantt td.gname{text-align:left;color:var(--text);padding-right:10px}
 .gcell{height:13px;border-radius:3px}
-.gcell.on{background:linear-gradient(180deg,#3b5fa3,#27457f)}
-.gcell.now{outline:2px solid var(--orange);outline-offset:-1px}
+.gcell.on{background:linear-gradient(180deg,#f4a93c,#e0820c)}
+.gcell.on.done{background:linear-gradient(180deg,#3cc88a,#067647)}
+.gcell.now{outline:2px solid var(--navy);outline-offset:-1px}
 .note{margin-top:12px;font-size:.8rem;background:var(--blue-bg);border-left:3px solid var(--blue);padding:9px 13px;border-radius:0 6px 6px 0;color:#1d4f9c}
 .issue{margin-top:8px;font-size:.8rem;background:var(--amber-bg);border-left:3px solid var(--amber);padding:9px 13px;border-radius:0 6px 6px 0;color:#93550c}
 
@@ -116,7 +117,7 @@ footer{font-size:.76rem;color:var(--muted);text-align:center;margin-top:30px;lin
 .mv{position:relative;background:var(--blue-bg);color:var(--blue);font-weight:700;border-radius:5px;padding:2px 0;font-size:.74rem;text-align:center;border:1px solid #d3e7fd}
 .mv:hover{background:#dcebfc}
 .mv.hasd::after{content:'';position:absolute;top:-3px;right:-3px;width:8px;height:8px;border-radius:50%;background:var(--orange);border:1.5px solid #fff}
-.gcell.gd::after{content:'';position:absolute;top:-4px;right:-3px;width:8px;height:8px;border-radius:50%;background:var(--orange);border:1.5px solid #fff}
+.gcell.gd::after{content:'';position:absolute;top:-4px;right:-3px;width:8px;height:8px;border-radius:50%;background:var(--navy);border:1.5px solid #fff}
 .gcell.gd{position:relative}
 .gcell.gd:hover{outline:2px solid var(--orange)}
 </style>
@@ -181,7 +182,8 @@ footer{font-size:.76rem;color:var(--muted);text-align:center;margin-top:30px;lin
       <span><i style="background:var(--amber-bg);border:1px solid var(--amber)"></i>ล่าช้าเล็กน้อย (&lt; 10 จุด)</span>
       <span><i style="background:var(--red-bg);border:1px solid var(--red)"></i>ล่าช้า (≥ 10 จุด)</span>
       <span><i style="background:#eef0f4"></i>ยังไม่ถึงกำหนด / รอรายงานผล</span>
-      <span><i style="background:linear-gradient(180deg,#f7a93f,#f08c00)"></i>ช่วงดำเนินการตามแผน</span>
+      <span><i style="background:linear-gradient(180deg,#3cc88a,#067647)"></i>กิจกรรมย่อย: เสร็จสิ้น</span>
+      <span><i style="background:linear-gradient(180deg,#f4a93c,#e0820c)"></i>กิจกรรมย่อย: ยังไม่เสร็จ (ตามช่วงแผน)</span>
     </div>
   </div>
 
@@ -491,7 +493,7 @@ function renderBar(){
 function ganttHTML(a){
   const done=a.subs.filter(([nm])=>(SUB[nm.split(' ')[0]]||{}).st===WS_DONE).length;
   const cnt=Object.keys(SUB).length?` · เสร็จสิ้น ${done}/${a.subs.length} รายการ`:'';
-  let h=`<div class="gtitle">กิจกรรมย่อยและช่วงเวลาดำเนินการ${cnt} · ช่องที่มีจุดส้ม ● คลิกเพื่อดูรายละเอียดงานของเดือนนั้น</div><table class="gantt"><tr><th class="gname"></th>`;
+  let h=`<div class="gtitle">กิจกรรมย่อยและช่วงเวลาดำเนินการ${cnt} · <span style="color:#067647">เขียว</span>=เสร็จสิ้น <span style="color:#e0820c">ส้ม</span>=ยังไม่เสร็จ · ช่องที่มีจุด ● คลิกดูรายละเอียดงานของเดือนนั้น</div><table class="gantt"><tr><th class="gname"></th>`;
   MONTHS.forEach((m,i)=>h+=`<th${i===curM?' style="color:var(--navy);font-weight:700"':''}>${m}</th>`);
   h+='<th style="width:120px">สถานะ</th></tr>';
   // แถวผลการดำเนินงานรายเดือนของกิจกรรมหลัก (คลิกดูรายละเอียด)
@@ -508,9 +510,11 @@ function ganttHTML(a){
     const sid=nm.split(' ')[0], s=SUB[sid]||null, sm=SUBM[sid]||{};
     const noteLine=s&&(s.note||s.issue)
       ?`<div style="font-size:.72rem;color:var(--muted);margin-top:2px">${s.note?'▸ '+s.note:''}${s.issue?' <span style="color:var(--amber)">⚠ '+s.issue+'</span>':''}</div>`:'';
+    const subDone=s&&s.st===WS_DONE;
     h+=`<tr><td class="gname">${nm}${noteLine}</td>`;
-    for(let i=0;i<12;i++){const hasD=!!sm[i];
-      h+=`<td><div class="gcell ${bits[i]==='1'?'on':''} ${i===curM?'now':''} ${hasD?'mcell gd':''}"${hasD?` data-sub="${sid}" data-m="${i}" title="คลิกดูรายละเอียด"`:''}></div></td>`;}
+    for(let i=0;i<12;i++){const hasD=!!sm[i], on=bits[i]==='1';
+      const cls=on?(subDone?'on done':'on'):'';
+      h+=`<td><div class="gcell ${cls} ${i===curM?'now':''} ${hasD?'mcell gd':''}"${hasD?` data-sub="${sid}" data-m="${i}" title="คลิกดูรายละเอียด"`:''}></div></td>`;}
     h+=`<td style="text-align:center">${s&&s.st?wsChip(s.st):'<span class="chip n">–</span>'}</td></tr>`;
   }
   h+='</table>';
