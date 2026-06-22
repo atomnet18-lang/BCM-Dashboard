@@ -538,8 +538,9 @@ function ganttHTML(a){
       else h+='<td></td>';}
     h+='<td></td></tr>';
   }
-  for(const [nm,plan,act] of a.subs){
+  for(const [nm,plan,actEmb] of a.subs){
     const sid=nm.split(' ')[0], s=SUB[sid]||null, sm=SUBM[sid]||{};
+    const act=effAct(sid,actEmb);
     const noteLine=s&&(s.note||s.issue)
       ?`<div style="font-size:.72rem;color:var(--muted);margin-top:2px">${s.note?'▸ '+s.note:''}${s.issue?' <span style="color:var(--amber)">⚠ '+s.issue+'</span>':''}</div>`:'';
     const late=isLateSub(plan,act,curM);
@@ -578,8 +579,9 @@ function renderTable(){
 
 function lastPlannedMonth(bits){let last=-1;for(let i=0;i<12;i++)if(bits[i]==='1')last=i;return last;}
 function cnt1(b){let c=0;for(let i=0;i<12;i++)if(b[i]==="1")c++;return c;}
+function effAct(sid,emb){if(!hasActual)return emb;const sm=SUBM[sid]||{};let b="";for(let i=0;i<12;i++)b+=(sm[i]!=null&&sm[i]!=="")?"1":"0";return b;}
 function isLateSub(plan,act,m){const last=lastPlannedMonth(plan);if(last<0)return false;return m>last&&cnt1(act)<cnt1(plan);}
-function lateSubs(m){const out=[];for(const a of ACTIVITIES){for(const [nm,plan,act] of a.subs){if(isLateSub(plan,act,m)){const last=lastPlannedMonth(plan);out.push({aid:a.id,nm,last,pc:cnt1(plan),acc:cnt1(act),months:m-last});}}}return out;}
+function lateSubs(m){const out=[];for(const a of ACTIVITIES){for(const [nm,plan,actEmb] of a.subs){const act=effAct(nm.split(' ')[0],actEmb);if(isLateSub(plan,act,m)){const last=lastPlannedMonth(plan);out.push({aid:a.id,nm,last,pc:cnt1(plan),acc:cnt1(act),months:m-last});}}}return out;}
 function renderLate(){
   const card=document.getElementById('lateCard'),el=document.getElementById('lateBody'); if(!card||!el)return;
   card.style.display='';
