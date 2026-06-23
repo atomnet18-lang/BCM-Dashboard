@@ -108,6 +108,9 @@ table.gantt td.gname{text-align:left;color:var(--text);padding-right:10px}
 .g2 .gp.on{background:linear-gradient(180deg,#f7b66a,#e0820c)}
 .g2 .ga.on{background:linear-gradient(180deg,#3cc88a,#067647)}
 .g2.now{outline:2px solid var(--navy);outline-offset:1px}
+@keyframes barblink{0%,100%{opacity:1}50%{opacity:.3}}
+.g2.now .gp.on,.g2.now .ga.on{animation:barblink 1.1s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.g2.now .gp.on,.g2.now .ga.on{animation:none}}
 .g2.gd{cursor:pointer}
 .g2.gd::after{content:"";position:absolute;width:4px;height:4px;border-radius:50%;background:var(--navy);margin:-9px auto 0;display:block;opacity:.55}
 table.gantt td{position:relative}
