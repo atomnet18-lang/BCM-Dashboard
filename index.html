@@ -81,6 +81,9 @@ tr.open .caret{transform:rotate(90deg)}
 .chip.late{background:var(--red-bg);color:var(--red);border-color:#fecdca}
 table.gantt tr.late-row td.gname{box-shadow:inset 3px 0 0 var(--red);font-weight:600}
 .latecard{border-left:4px solid var(--red)}
+#reportCard h2{color:var(--navy)}
+.reportbox{white-space:pre-wrap;font-size:.9rem;line-height:1.65;color:var(--text);background:var(--green-bg);border:1px solid var(--line);border-left:4px solid var(--navy);border-radius:8px;padding:14px 16px;min-height:96px}
+.reportbox.empty{color:var(--muted);font-style:italic;background:#f8fafc;border-left-color:var(--line)}
 .latelist{list-style:none;margin:8px 0 0;padding:0}
 .latelist li{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:9px 13px;border:1px solid #fecdca;background:var(--red-bg);border-radius:8px;margin-bottom:8px;font-size:.83rem}
 .latelist .lt-name{color:var(--navy);font-weight:600}
@@ -184,11 +187,18 @@ footer{font-size:.76rem;color:var(--muted);text-align:center;margin-top:30px;lin
     </div>
   </div>
 
-  <!-- รายการล่าช้ากว่าแผน -->
-  <div class="card latecard" id="lateCard" style="display:none">
-    <h2>⚠ กิจกรรมย่อยที่ล่าช้ากว่าแผน</h2>
-    <div class="desc" id="lateDesc">รายการที่เลยช่วงเวลาตามแผน (Gantt) มาแล้ว แต่สถานะยังไม่ "เสร็จสิ้น" ณ เดือนที่เลือก</div>
-    <div id="lateBody"></div>
+  <!-- รายการล่าช้า + รายงานประจำเดือน -->
+  <div class="grid2">
+    <div class="card latecard" id="lateCard">
+      <h2>⚠ กิจกรรมย่อยที่ล่าช้ากว่าแผน</h2>
+      <div class="desc" id="lateDesc">รายการที่เลยช่วงเวลาตามแผน (Gantt) มาแล้ว แต่สถานะยังไม่ "เสร็จสิ้น" ณ เดือนที่เลือก</div>
+      <div id="lateBody"></div>
+    </div>
+    <div class="card" id="reportCard">
+      <h2 id="reportTitle">รายงานประจำเดือน</h2>
+      <div class="desc">สรุปภาพรวมการทำงานประจำเดือน (คีย์จากเทมเพลต Excel ชีต "รายงานเดือน")</div>
+      <div id="reportBody" class="reportbox empty"></div>
+    </div>
   </div>
 
   <!-- Activity table -->
@@ -345,6 +355,8 @@ const ACTIVITIES=[
 let ACTUAL={};   // ACTUAL[id][m] = {v,d,note,issue,st} (d = รายละเอียดงานของเดือนนั้น)
 let SUB={};      // SUB['2.4'] = {st,note,issue} สถานะปัจจุบันของกิจกรรมย่อย
 let SUBM={};     // SUBM['2.4'][m] = รายละเอียดงานรายเดือนของกิจกรรมย่อย
+let MONTHLY={};  // MONTHLY[m] = ข้อความสรุปรายงานประจำเดือน
+const MONTHS_FULL=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
 
 function planAt(a,m){ // เป้าหมายสะสม ณ เดือน m (0-11) แบบ carry-forward
   let v=0; for(let i=0;i<=m;i++){ if(a.plan[i]!=null)v=a.plan[i]; } return v;
@@ -392,7 +404,9 @@ function loadActual(text){
   h.forEach((c,j)=>{const name=c.replace(/^[ad]_/,'');
     if(!c.includes('70')&&!/month/.test(c)){for(const k in THM){if(name.startsWith(k)){monthCols.push([j,THM[k]-1]);break;}}}});
   if(iA>=0&&monthCols.length){
+    MONTHLY={};
     for(let r=1;r<rows.length;r++){const c=rows[r]; if(!c[iA])continue;
+      if((c[iA]||'').trim()==='รายงานเดือน'){for(const [j,mi] of monthCols){const raw=(c[j]??'').toString().trim();if(raw!=='')MONTHLY[mi]=raw;}continue;}
       const ma=(c[iA]||'').trim().match(/^(\d+)\s*-\s*(\d+)$/); if(!ma)continue;
       const id=parseInt(ma[1]), sx=parseInt(ma[2]);
       const st=iS>=0?(c[iS]||'').trim():'', note=iN>=0?(c[iN]||'').trim():'', issue=iI>=0?(c[iI]||'').trim():'';
@@ -490,7 +504,7 @@ function renderKPIs(){
 function renderScurve(){
   const labels=MONTHS.map(m=>m);
   const plan=MONTHS.map((_,i)=>Math.round(overall(i,false)*100)/100);
-  const act=MONTHS.map((_,i)=>{ if(!hasActual)return null;
+  const act=MONTHS.map((_,i)=>{ if(!hasActual||i>curM)return null;
     let any=false; for(const a of ACTIVITIES){const rec=ACTUAL[a.id]||{}; for(let j=0;j<=i;j++)if(rec[j]&&rec[j].v!=null)any=true;}
     if(!any)return null; const v=overall(i,true); return v==null?null:Math.round(v*100)/100;});
   if(scurveChart)scurveChart.destroy();
@@ -596,7 +610,14 @@ function renderLate(){
   }
   el.innerHTML=h+'</ul>';
 }
-function renderAll(){renderKPIs();renderScurve();renderBar();renderLate();renderTable();}
+function renderReport(){
+  const t=document.getElementById('reportTitle'),b=document.getElementById('reportBody'); if(!t||!b)return;
+  t.textContent=`รายงานประจำเดือน ${MONTHS_FULL[curM]} ${YEAR_BE}`;
+  const txt=(MONTHLY[curM]||'').trim();
+  if(txt){b.className='reportbox';b.textContent=txt;}
+  else{b.className='reportbox empty';b.textContent='— ยังไม่มีรายงานสรุปสำหรับเดือนนี้ —';}
+}
+function renderAll(){renderKPIs();renderScurve();renderBar();renderLate();renderReport();renderTable();}
 
 /* ---- Popup รายละเอียดรายเดือน ---- */
 const esc=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\n/g,'<br>');
