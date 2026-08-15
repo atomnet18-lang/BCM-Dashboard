@@ -167,21 +167,20 @@ table.gantt td{position:relative}
 .issue{margin-top:8px;font-size:.8rem;background:var(--amber-bg);border-left:3px solid var(--amber);padding:9px 13px;border-radius:0 6px 6px 0;color:#93550c}
 
 /* ===== legend + footer ===== */
-/* ===== 3D tilt + entrance motion ===== */
-.tilt{position:relative;transform-style:preserve-3d;
-  transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));
-  transition:transform .25s cubic-bezier(.22,.9,.32,1),box-shadow .25s ease;will-change:transform}
-.tilt:hover{box-shadow:0 18px 40px rgba(60,40,30,.16),0 4px 10px rgba(60,40,30,.08)}
+/* ===== hover shadow/glow + entrance motion (no tilt) ===== */
+.tilt{position:relative;transition:box-shadow .25s ease,transform .25s ease;will-change:box-shadow}
+.tilt:hover{box-shadow:0 18px 40px rgba(60,40,30,.16),0 4px 10px rgba(60,40,30,.08);transform:translateY(-3px)}
 .tilt::after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;
   transition:opacity .25s;
   background:radial-gradient(480px circle at var(--mx,50%) var(--my,50%),rgba(255,255,255,.35),transparent 42%)}
 .tilt:hover::after{opacity:1}
 [data-theme="dark"] .tilt::after{background:radial-gradient(480px circle at var(--mx,50%) var(--my,50%),rgba(255,255,255,.10),transparent 42%)}
-@keyframes rise3d{0%{opacity:0;transform:perspective(1000px) rotateX(-14deg) translateY(26px) scale(.96)}
-  100%{opacity:1;transform:perspective(1000px) rotateX(0deg) translateY(0) scale(1)}}
+@keyframes rise3d{0%{opacity:0;transform:translateY(26px) scale(.96)}
+  100%{opacity:1;transform:translateY(0) scale(1)}}
 .kpi,.card{animation:rise3d .6s cubic-bezier(.22,1.12,.36,1) backwards;animation-delay:calc(var(--i,0) * 70ms)}
 @media (prefers-reduced-motion:reduce){
-  .tilt{transform:none!important;transition:none!important}
+  .tilt{transition:none!important}
+  .tilt:hover{transform:none!important}
   .tilt::after{display:none!important}
   .kpi,.card{animation:none!important}
 }
@@ -579,16 +578,12 @@ function initTilt(root){
   if(reduceMotion)return;
   (root||document).querySelectorAll('.tilt').forEach(el=>{
     if(el._tiltBound)return; el._tiltBound=true;
-    const maxT=el.classList.contains('kpi')?9:6;
     el.addEventListener('pointermove',e=>{
       const r=el.getBoundingClientRect();
       const px=(e.clientX-r.left)/r.width, py=(e.clientY-r.top)/r.height;
-      el.style.setProperty('--ry',(((px-.5)*2*maxT).toFixed(2))+'deg');
-      el.style.setProperty('--rx',((-(py-.5)*2*maxT).toFixed(2))+'deg');
       el.style.setProperty('--mx',(px*100).toFixed(1)+'%');
       el.style.setProperty('--my',(py*100).toFixed(1)+'%');
     });
-    el.addEventListener('pointerleave',()=>{el.style.setProperty('--rx','0deg');el.style.setProperty('--ry','0deg');});
   });
 }
 function renderKPIs(){
