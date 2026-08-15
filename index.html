@@ -49,17 +49,24 @@ header::before{content:'';position:absolute;left:0;right:0;top:0;height:1px;back
 select#monthSel{font-family:'Sarabun';font-size:.92rem;font-weight:700;padding:9px 20px;border-radius:999px;border:1px solid rgba(255,255,255,.5);background:rgba(255,255,255,.30);backdrop-filter:blur(16px) saturate(180%);-webkit-backdrop-filter:blur(16px) saturate(180%);color:#4a352a;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 2px 10px rgba(0,40,25,.10);transition:background .18s,box-shadow .18s}
 select#monthSel:hover{background:rgba(255,255,255,.42)}
 select#monthSel:focus-visible{outline:2px solid #fff;outline-offset:3px;background:rgba(255,255,255,.46)}
-.theme-toggle{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;
-  border-radius:999px;border:1px solid rgba(255,255,255,.5);background:rgba(255,255,255,.30);
+.theme-switch{display:inline-flex;align-items:center;gap:9px;cursor:pointer;user-select:none;flex:none}
+.theme-switch .ts-label{font-size:.78rem;font-weight:600;color:#fff;letter-spacing:.2px;opacity:.92}
+.theme-switch input[type="checkbox"]{
+  appearance:none;-webkit-appearance:none;margin:0;flex:none;cursor:pointer;
+  width:46px;height:27px;border-radius:999px;position:relative;
+  border:1px solid rgba(255,255,255,.5);background:rgba(255,255,255,.30);
   backdrop-filter:blur(16px) saturate(180%);-webkit-backdrop-filter:blur(16px) saturate(180%);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 2px 10px rgba(0,40,25,.10);
-  color:#4a352a;cursor:pointer;transition:background .18s,box-shadow .18s;flex:none}
-.theme-toggle:hover{background:rgba(255,255,255,.42)}
-.theme-toggle:focus-visible{outline:2px solid #fff;outline-offset:3px}
-.theme-toggle svg{width:19px;height:19px;display:block}
-.theme-toggle .icon-moon{display:none}
-[data-theme="dark"] .theme-toggle .icon-sun{display:none}
-[data-theme="dark"] .theme-toggle .icon-moon{display:block}
+  transition:background .2s,box-shadow .2s}
+.theme-switch input[type="checkbox"]::before{
+  content:'';position:absolute;top:2px;left:2px;width:21px;height:21px;border-radius:50%;
+  background:#fff8f0;box-shadow:0 1px 3px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.7);
+  transition:transform .22s cubic-bezier(.4,0,.2,1),background .22s}
+.theme-switch input[type="checkbox"]:hover{background:rgba(255,255,255,.42)}
+.theme-switch input[type="checkbox"]:checked{background:rgba(51,43,37,.55);border-color:rgba(255,255,255,.35)}
+.theme-switch input[type="checkbox"]:checked:hover{background:rgba(51,43,37,.66)}
+.theme-switch input[type="checkbox"]:checked::before{transform:translateX(19px);background:#332b25}
+.theme-switch input[type="checkbox"]:focus-visible{outline:2px solid #fff;outline-offset:3px}
 .asof{font-size:.74rem;opacity:.65;text-align:right;margin-top:8px;letter-spacing:.2px}
 
 /* ===== KPI cards ===== */
@@ -176,7 +183,8 @@ footer{font-size:.76rem;color:var(--muted);text-align:center;margin-top:30px;lin
   .badge-iso{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(255,255,255,.18)}
   .md-close{backdrop-filter:none;-webkit-backdrop-filter:none;background:#4a4038}
   .modal-bg{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(15,23,42,.6)}
-  .theme-toggle{backdrop-filter:none;-webkit-backdrop-filter:none;background:var(--card)}
+  .theme-switch input[type="checkbox"]{backdrop-filter:none;-webkit-backdrop-filter:none;background:var(--card)}
+  .theme-switch input[type="checkbox"]:checked{background:#332b25}
 }
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
   header{background:linear-gradient(120deg,#332b25 0%,#4a4038 100%)}
@@ -184,7 +192,8 @@ footer{font-size:.76rem;color:var(--muted);text-align:center;margin-top:30px;lin
   .badge-iso{background:rgba(255,255,255,.18)}
   .md-close{background:#4a4038}
   .modal-bg{background:rgba(15,23,42,.6)}
-  .theme-toggle{background:var(--card)}
+  .theme-switch input[type="checkbox"]{background:var(--card)}
+  .theme-switch input[type="checkbox"]:checked{background:#332b25}
 }
 
 /* ===== Monthly detail popup ===== */
@@ -231,10 +240,10 @@ footer{font-size:.76rem;color:var(--muted);text-align:center;margin-top:30px;lin
         <select id="monthSel"></select>
         <div class="asof" id="srcInfo">แหล่งข้อมูล: แผนปฏิบัติการ BCM ปี 2569</div>
       </div>
-      <button id="themeToggle" class="theme-toggle" type="button" aria-label="สลับโหมดมืด/สว่าง" title="สลับโหมดมืด/สว่าง">
-        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.2 19.8l1.7-1.7M18.1 5.9l1.7-1.7"/></svg>
-        <svg class="icon-moon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 14.6A8.5 8.5 0 0 1 9.4 3.5a8.5 8.5 0 1 0 11.1 11.1Z"/></svg>
-      </button>
+      <label class="theme-switch">
+        <span class="ts-label">โหมดมืด</span>
+        <input type="checkbox" id="themeToggle" role="switch">
+      </label>
     </div>
   </div>
 </header>
@@ -577,10 +586,10 @@ function chartTheme(){
   return dark?{grid:'rgba(255,255,255,.08)',tick:'#cbbfae',legend:'#e7ded4'}:{grid:'#eef1f5',tick:'#5c5449',legend:'#3a332c'};
 }
 function bindThemeToggle(){
-  const btn=document.getElementById('themeToggle'); if(!btn)return;
-  btn.addEventListener('click',()=>{
-    const cur=document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';
-    const next=cur==='dark'?'light':'dark';
+  const cb=document.getElementById('themeToggle'); if(!cb)return;
+  cb.checked=document.documentElement.getAttribute('data-theme')==='dark';
+  cb.addEventListener('change',()=>{
+    const next=cb.checked?'dark':'light';
     document.documentElement.setAttribute('data-theme',next);
     try{localStorage.setItem('bcm_theme',next);}catch(e){}
     renderAll();
