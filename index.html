@@ -167,6 +167,24 @@ table.gantt td{position:relative}
 .issue{margin-top:8px;font-size:.8rem;background:var(--amber-bg);border-left:3px solid var(--amber);padding:9px 13px;border-radius:0 6px 6px 0;color:#93550c}
 
 /* ===== legend + footer ===== */
+/* ===== 3D tilt + entrance motion ===== */
+.tilt{position:relative;transform-style:preserve-3d;
+  transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));
+  transition:transform .25s cubic-bezier(.22,.9,.32,1),box-shadow .25s ease;will-change:transform}
+.tilt:hover{box-shadow:0 18px 40px rgba(60,40,30,.16),0 4px 10px rgba(60,40,30,.08)}
+.tilt::after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;
+  transition:opacity .25s;
+  background:radial-gradient(480px circle at var(--mx,50%) var(--my,50%),rgba(255,255,255,.35),transparent 42%)}
+.tilt:hover::after{opacity:1}
+[data-theme="dark"] .tilt::after{background:radial-gradient(480px circle at var(--mx,50%) var(--my,50%),rgba(255,255,255,.10),transparent 42%)}
+@keyframes rise3d{0%{opacity:0;transform:perspective(1000px) rotateX(-14deg) translateY(26px) scale(.96)}
+  100%{opacity:1;transform:perspective(1000px) rotateX(0deg) translateY(0) scale(1)}}
+.kpi,.card{animation:rise3d .6s cubic-bezier(.22,1.12,.36,1) backwards;animation-delay:calc(var(--i,0) * 70ms)}
+@media (prefers-reduced-motion:reduce){
+  .tilt{transform:none!important;transition:none!important}
+  .tilt::after{display:none!important}
+  .kpi,.card{animation:none!important}
+}
 .legend{display:flex;gap:18px;flex-wrap:wrap;font-size:.76rem;color:var(--muted);margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
 .legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
 footer{font-size:.76rem;color:var(--muted);text-align:center;margin-top:30px;line-height:1.8}
@@ -255,12 +273,12 @@ footer{font-size:.76rem;color:var(--muted);text-align:center;margin-top:30px;lin
 
   <!-- Charts -->
   <div class="grid2">
-    <div class="card">
+    <div class="card tilt" style="--i:0">
       <h2>ความก้าวหน้าสะสมรายเดือน (S-Curve)</h2>
       <div class="desc">เป้าหมายสะสมถ่วงน้ำหนักตามแผน เทียบกับผลการดำเนินงานจริง (ร้อยละ)</div>
       <div class="chartbox"><canvas id="scurve"></canvas></div>
     </div>
-    <div class="card">
+    <div class="card tilt" style="--i:1">
       <h2>ความก้าวหน้ารายกิจกรรม</h2>
       <div class="desc" id="barDesc">เป้าหมาย vs ผลงาน ของแต่ละกิจกรรม (ร้อยละของกิจกรรม)</div>
       <div class="chartbox"><canvas id="actbar"></canvas></div>
@@ -269,12 +287,12 @@ footer{font-size:.76rem;color:var(--muted);text-align:center;margin-top:30px;lin
 
   <!-- รายการล่าช้า + รายงานประจำเดือน -->
   <div class="grid2">
-    <div class="card latecard" id="lateCard">
+    <div class="card latecard tilt" id="lateCard" style="--i:2">
       <h2>⚠ กิจกรรมย่อยที่ล่าช้ากว่าแผน</h2>
       <div class="desc" id="lateDesc">รายการที่เลยช่วงเวลาตามแผน (Gantt) มาแล้ว แต่สถานะยังไม่ "เสร็จสิ้น" ณ เดือนที่เลือก</div>
       <div id="lateBody"></div>
     </div>
-    <div class="card" id="reportCard">
+    <div class="card tilt" id="reportCard" style="--i:3">
       <h2 id="reportTitle">รายงานประจำเดือน</h2>
       <div class="desc">สรุปภาพรวมการทำงานประจำเดือน (คีย์จากเทมเพลต Excel ชีต "รายงานเดือน")</div>
       <div id="reportBody" class="reportbox empty"></div>
@@ -282,7 +300,7 @@ footer{font-size:.76rem;color:var(--muted);text-align:center;margin-top:30px;lin
   </div>
 
   <!-- Activity table -->
-  <div class="card">
+  <div class="card tilt" style="--i:4">
     <h2>รายละเอียดกิจกรรมตามแผนปฏิบัติการ (12 กิจกรรม)</h2>
     <div class="desc">คลิกที่แถวกิจกรรมเพื่อดูกิจกรรมย่อยและช่วงเวลาดำเนินการ (Gantt) · เดือนที่เลือกถูกเน้นกรอบ</div>
     <div style="overflow-x:auto">
@@ -556,6 +574,23 @@ function wsChip(s){
   return '<span class="chip n">–</span>';
 }
 
+const reduceMotion=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+function initTilt(root){
+  if(reduceMotion)return;
+  (root||document).querySelectorAll('.tilt').forEach(el=>{
+    if(el._tiltBound)return; el._tiltBound=true;
+    const maxT=el.classList.contains('kpi')?9:6;
+    el.addEventListener('pointermove',e=>{
+      const r=el.getBoundingClientRect();
+      const px=(e.clientX-r.left)/r.width, py=(e.clientY-r.top)/r.height;
+      el.style.setProperty('--ry',(((px-.5)*2*maxT).toFixed(2))+'deg');
+      el.style.setProperty('--rx',((-(py-.5)*2*maxT).toFixed(2))+'deg');
+      el.style.setProperty('--mx',(px*100).toFixed(1)+'%');
+      el.style.setProperty('--my',(py*100).toFixed(1)+'%');
+    });
+    el.addEventListener('pointerleave',()=>{el.style.setProperty('--rx','0deg');el.style.setProperty('--ry','0deg');});
+  });
+}
 function renderKPIs(){
   const t=overall(curM,false), v=overall(curM,true);
   const d=v==null?null:v-t;
@@ -565,20 +600,21 @@ function renderKPIs(){
   const dCls=d==null?'':(d>=0?'good':(d>-5?'warn':'bad'));
   const dTxt=d==null?'–':((d>=0?'+':'')+fmt(d));
   document.getElementById('kpis').innerHTML=`
-   <div class="kpi" style="--accent:var(--navy)"><div class="lbl">เป้าหมายสะสม ณ ${MONTHS[curM]} ${YEAR_BE}</div>
+   <div class="kpi tilt" style="--accent:var(--navy);--i:0"><div class="lbl">เป้าหมายสะสม ณ ${MONTHS[curM]} ${YEAR_BE}</div>
      <div class="val">${fmt(t)}<small> %</small></div><div class="sub">จากเป้าหมายทั้งปี 100%</div></div>
-   <div class="kpi" style="--accent:var(--blue)"><div class="lbl">ผลงานสะสม (ถ่วงน้ำหนัก)</div>
+   <div class="kpi tilt" style="--accent:var(--blue);--i:1"><div class="lbl">ผลงานสะสม (ถ่วงน้ำหนัก)</div>
      <div class="val">${fmt(v)}<small> %</small></div><div class="sub">${v==null?'ยังไม่มีข้อมูลผลงานจริง':'จากรายงานผลการดำเนินงาน'}</div></div>
-   <div class="kpi ${dCls}" style="--accent:${d==null?'var(--muted)':d>=0?'var(--green)':'var(--red)'}"><div class="lbl">ผลต่าง (ผลงาน − เป้าหมาย)</div>
+   <div class="kpi tilt ${dCls}" style="--accent:${d==null?'var(--muted)':d>=0?'var(--green)':'var(--red)'};--i:2"><div class="lbl">ผลต่าง (ผลงาน − เป้าหมาย)</div>
      <div class="val">${dTxt}<small>${d==null?'':' จุด'}</small></div><div class="sub">${d==null?'รอข้อมูลผลงาน':d>=0?'ดำเนินงานเป็นไปตามแผน':'ต่ำกว่าเป้าหมาย'}</div></div>
-   <div class="kpi" style="--accent:var(--green)"><div class="lbl">สถานะเทียบแผน (11 กิจกรรม)</div>
+   <div class="kpi tilt" style="--accent:var(--green);--i:3"><div class="lbl">สถานะเทียบแผน (12 กิจกรรม)</div>
      <div class="val" style="font-size:1.25rem;display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
        <span class="chip g">✓ ${g}</span><span class="chip a">! ${a}</span><span class="chip r">✕ ${r}</span><span class="chip n">○ ${n}</span></div>
      <div class="sub" style="margin-top:6px">ตามแผน · ล่าช้าเล็กน้อย · ล่าช้า · ยังไม่ถึงกำหนด/รอผล</div></div>
-   <div class="kpi" style="--accent:var(--orange)"><div class="lbl">สถานะงาน (รายงานโดยผู้รับผิดชอบ)</div>
+   <div class="kpi tilt" style="--accent:var(--orange);--i:4"><div class="lbl">สถานะงาน (รายงานโดยผู้รับผิดชอบ)</div>
      <div class="val" style="font-size:1.25rem;display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
        <span class="chip g">✓ ${wd}</span><span class="chip b">⟳ ${wg}</span><span class="chip n">○ ${wn}</span></div>
      <div class="sub" style="margin-top:6px">เสร็จสิ้น · อยู่ระหว่างดำเนินการ · ยังไม่ดำเนินการ/ไม่ระบุ</div></div>`;
+  initTilt(document);
 }
 
 function chartTheme(){
