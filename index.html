@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>(function(){try{var s=localStorage.getItem('bcm_theme');var t=s||((window.matchMedia&&matchMedia('(prefers-color-scheme:dark)').matches)?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <title>Dashboard BCM ปี 2569 | แผนปฏิบัติการบริหารความต่อเนื่องทางธุรกิจ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -14,9 +15,23 @@
   --green:#7ba377; --green-bg:#edf3ea; --amber:#cf9a44; --amber-bg:#f9f0dc;
   --red:#cf6b60; --red-bg:#faeae8; --blue:#b17f92; --blue-bg:#f7edf0;
   --shadow:0 1px 2px rgba(60,40,30,.05),0 1px 3px rgba(60,40,30,.08);
+  color-scheme:light;
+}
+:root[data-theme="dark"]{
+  --navy:#e7c9a9; --navy2:#caa07a; --orange:#f0b98a; --orange-soft:#3a2f27;
+  --bg:#1c1815; --card:#241f1b; --line:#3a332c; --text:#ece4da; --muted:#a89a8b;
+  --green:#8fbf8a; --green-bg:#26302a; --amber:#e0ac57; --amber-bg:#332a1c;
+  --red:#e28a80; --red-bg:#34211f; --blue:#c99bab; --blue-bg:#30232a;
+  --shadow:0 1px 2px rgba(0,0,0,.35),0 4px 14px rgba(0,0,0,.32);
+  color-scheme:dark;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Sarabun',sans-serif;color:var(--text);font-size:15px;-webkit-font-smoothing:antialiased;background:radial-gradient(1100px 750px at 6% -8%,#f6d9bd 0%,transparent 58%),radial-gradient(900px 650px at 96% 18%,#ece2da 0%,transparent 55%),radial-gradient(800px 600px at 30% 105%,#f0e2d4 0%,transparent 50%),linear-gradient(160deg,#f7ecdf 0%,#efeae4 55%,#e9e6e2 100%);background-attachment:fixed}
+[data-theme="dark"] body{background:
+  radial-gradient(1100px 750px at 6% -8%,#3a2a1e 0%,transparent 60%),
+  radial-gradient(900px 650px at 96% 18%,#2a2420 0%,transparent 55%),
+  radial-gradient(800px 600px at 30% 105%,#241f2a 0%,transparent 50%),
+  linear-gradient(160deg,#1c1815 0%,#19161a 55%,#15131a 100%);background-attachment:fixed}
 .wrap{max-width:1280px;margin:0 auto;padding:0 24px 56px}
 
 /* ===== Header : Enterprise clean ===== */
@@ -34,6 +49,17 @@ header::before{content:'';position:absolute;left:0;right:0;top:0;height:1px;back
 select#monthSel{font-family:'Sarabun';font-size:.92rem;font-weight:700;padding:9px 20px;border-radius:999px;border:1px solid rgba(255,255,255,.5);background:rgba(255,255,255,.30);backdrop-filter:blur(16px) saturate(180%);-webkit-backdrop-filter:blur(16px) saturate(180%);color:#4a352a;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 2px 10px rgba(0,40,25,.10);transition:background .18s,box-shadow .18s}
 select#monthSel:hover{background:rgba(255,255,255,.42)}
 select#monthSel:focus-visible{outline:2px solid #fff;outline-offset:3px;background:rgba(255,255,255,.46)}
+.theme-toggle{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;
+  border-radius:999px;border:1px solid rgba(255,255,255,.5);background:rgba(255,255,255,.30);
+  backdrop-filter:blur(16px) saturate(180%);-webkit-backdrop-filter:blur(16px) saturate(180%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 2px 10px rgba(0,40,25,.10);
+  color:#4a352a;cursor:pointer;transition:background .18s,box-shadow .18s;flex:none}
+.theme-toggle:hover{background:rgba(255,255,255,.42)}
+.theme-toggle:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.theme-toggle svg{width:19px;height:19px;display:block}
+.theme-toggle .icon-moon{display:none}
+[data-theme="dark"] .theme-toggle .icon-sun{display:none}
+[data-theme="dark"] .theme-toggle .icon-moon{display:block}
 .asof{font-size:.74rem;opacity:.65;text-align:right;margin-top:8px;letter-spacing:.2px}
 
 /* ===== KPI cards ===== */
@@ -58,18 +84,22 @@ select#monthSel:focus-visible{outline:2px solid #fff;outline-offset:3px;backgrou
 /* ===== Table : Clean UI + zebra ===== */
 table.acts{width:100%;border-collapse:collapse;font-size:.88rem}
 table.acts th{background:var(--navy);color:#fff;font-weight:600;padding:11px 12px;text-align:center;font-size:.78rem;position:sticky;top:0;letter-spacing:.3px}
+[data-theme="dark"] table.acts th{background:#2a2117}
 table.acts th:first-child{border-radius:14px 0 0 0;text-align:left}
 table.acts th:last-child{border-radius:0 14px 0 0}
 table.acts td{padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:middle;text-align:center}
 table.acts td.name{text-align:left;font-weight:500;max-width:380px}
 table.acts tr.main{cursor:pointer;transition:background .15s}
 table.acts tr.main:nth-child(4n+3){background:#f8fafc}
+[data-theme="dark"] table.acts tr.main:nth-child(4n+3){background:#242019}
 table.acts tr.main:hover{background:#eef4f0}
+[data-theme="dark"] table.acts tr.main:hover{background:#2e2820}
 .caret{display:inline-block;width:18px;height:18px;line-height:18px;text-align:center;border-radius:4px;background:var(--blue-bg);color:var(--blue);font-size:.68rem;margin-right:9px;transition:transform .2s;flex:none}
 tr.open .caret{transform:rotate(90deg)}
 .nm{display:flex;align-items:flex-start}
 .outp{font-size:.73rem;color:var(--muted);margin-top:3px;font-weight:400}
 .pbar{background:#eef1f5;border-radius:20px;height:8px;width:110px;margin:0 auto;overflow:hidden}
+[data-theme="dark"] .pbar{background:#3a332c}
 .pbar i{display:block;height:100%;border-radius:20px;background:var(--blue)}
 .pcell{display:flex;flex-direction:column;align-items:center;gap:4px}
 .pcell span{font-size:.76rem;font-weight:600;color:var(--muted)}
@@ -80,6 +110,7 @@ tr.open .caret{transform:rotate(90deg)}
 .chip.a{background:var(--amber-bg);color:var(--amber);border-color:#f0d9a8}
 .chip.r{background:var(--red-bg);color:var(--red);border-color:#f3cac5}
 .chip.n{background:#f3ede6;color:#6b5f54;border-color:#e6ddd3}
+[data-theme="dark"] .chip.n{background:#332c25;color:#c9bcae;border-color:#4a4038}
 .chip.b{background:var(--amber-bg);color:#8a5a12;border-color:#f0d9a8}
 .chip.late{background:var(--red-bg);color:var(--red);border-color:#f3cac5}
 table.gantt tr.late-row td.gname{box-shadow:inset 3px 0 0 var(--red);font-weight:600}
@@ -87,6 +118,7 @@ table.gantt tr.late-row td.gname{box-shadow:inset 3px 0 0 var(--red);font-weight
 #reportCard h2{color:var(--navy)}
 .reportbox{white-space:pre-wrap;font-size:.9rem;line-height:1.65;color:var(--text);background:var(--orange-soft);border:1px solid var(--line);border-left:4px solid var(--navy);border-radius:16px;padding:14px 16px;min-height:96px}
 .reportbox.empty{color:var(--muted);font-style:italic;background:#f8fafc;border-left-color:var(--line)}
+[data-theme="dark"] .reportbox.empty{background:#242019}
 .latelist{list-style:none;margin:8px 0 0;padding:0}
 .latelist li{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:9px 13px;border:1px solid #f3cac5;background:var(--red-bg);border-radius:14px;margin-bottom:8px;font-size:.83rem}
 .latelist .lt-name{color:var(--navy);font-weight:600}
@@ -94,9 +126,11 @@ table.gantt tr.late-row td.gname{box-shadow:inset 3px 0 0 var(--red);font-weight
 .latelist .lt-meta{color:var(--red);font-weight:700;white-space:nowrap;font-size:.77rem;text-align:right}
 .lateempty{font-size:.85rem;color:var(--green);background:var(--green-bg);border:1px solid #cfe3c9;padding:11px 14px;border-radius:14px}
 .wchip{background:#f3ede6;color:var(--navy);font-weight:700;border-radius:8px;padding:3px 9px;font-size:.78rem;border:1px solid var(--line)}
+[data-theme="dark"] .wchip{background:#332c25}
 
 /* ===== Sub rows / Gantt ===== */
 tr.sub td{background:#fbfcfe;padding:0}
+[data-theme="dark"] tr.sub td{background:#1c1814}
 .subwrap{padding:14px 18px 18px 46px}
 .gtitle{font-size:.76rem;font-weight:700;color:var(--muted);margin-bottom:10px;letter-spacing:.2px}
 table.gantt{width:100%;border-collapse:collapse;font-size:.8rem}
@@ -104,6 +138,7 @@ table.gantt th{font-size:.67rem;color:var(--muted);font-weight:600;padding:4px 2
 table.gantt th.gname{text-align:left;width:auto}
 table.gantt td{padding:5px 2px;border-bottom:1px solid #eef1f5}
 table.gantt tr:nth-child(even) td{background:#f8fafc}
+[data-theme="dark"] table.gantt tr:nth-child(even) td{background:#242019}
 table.gantt td.gname{text-align:left;color:var(--text);padding-right:10px}
 .gcell{height:13px;border-radius:3px}
 .gcell.on{background:linear-gradient(180deg,#f5cba0,#eba978)}
@@ -111,6 +146,7 @@ table.gantt td.gname{text-align:left;color:var(--text);padding-right:10px}
 .gcell.now{outline:2px solid var(--navy);outline-offset:-1px}
 .g2{display:flex;flex-direction:column;gap:1px;height:13px;border-radius:3px}
 .g2 .gp,.g2 .ga{height:6px;border-radius:2px;background:#eef0f4}
+[data-theme="dark"] .g2 .gp,[data-theme="dark"] .g2 .ga{background:#3a332c}
 .g2 .gp.on{background:linear-gradient(180deg,#f5cba0,#eba978)}
 .g2 .ga.on{background:linear-gradient(180deg,#dcb0bf,#b17f92)}
 .g2.now{outline:2px solid var(--navy);outline-offset:1px}
@@ -128,6 +164,7 @@ table.gantt td{position:relative}
 .legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
 footer{font-size:.76rem;color:var(--muted);text-align:center;margin-top:30px;line-height:1.8}
 .src-tag{display:inline-block;font-size:.72rem;background:#f2f4f7;border-radius:6px;padding:2px 10px;margin-left:6px;color:var(--muted)}
+[data-theme="dark"] .src-tag{background:#332c25}
 @media print{.hctrl{display:none}body{background:#fff}.card{break-inside:avoid;box-shadow:none}}
 
 /* ===== Liquid Glass: legibility & accessibility fallbacks ===== */
@@ -135,22 +172,24 @@ footer{font-size:.76rem;color:var(--muted);text-align:center;margin-top:30px;lin
 @media (prefers-reduced-transparency:reduce){
   header{backdrop-filter:none;-webkit-backdrop-filter:none;background:linear-gradient(120deg,#332b25 0%,#4a4038 100%)}
   header::before{display:none}
-  select#monthSel{backdrop-filter:none;-webkit-backdrop-filter:none;background:#ffffff;color:var(--navy);box-shadow:var(--shadow)}
+  select#monthSel{backdrop-filter:none;-webkit-backdrop-filter:none;background:var(--card);color:var(--navy);box-shadow:var(--shadow)}
   .badge-iso{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(255,255,255,.18)}
-  .md-close{backdrop-filter:none;-webkit-backdrop-filter:none;background:var(--navy)}
+  .md-close{backdrop-filter:none;-webkit-backdrop-filter:none;background:#4a4038}
   .modal-bg{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(15,23,42,.6)}
+  .theme-toggle{backdrop-filter:none;-webkit-backdrop-filter:none;background:var(--card)}
 }
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
   header{background:linear-gradient(120deg,#332b25 0%,#4a4038 100%)}
-  select#monthSel{background:#ffffff;color:var(--navy);box-shadow:var(--shadow)}
+  select#monthSel{background:var(--card);color:var(--navy);box-shadow:var(--shadow)}
   .badge-iso{background:rgba(255,255,255,.18)}
-  .md-close{background:var(--navy)}
+  .md-close{background:#4a4038}
   .modal-bg{background:rgba(15,23,42,.6)}
+  .theme-toggle{background:var(--card)}
 }
 
 /* ===== Monthly detail popup ===== */
 .modal-bg{position:fixed;inset:0;background:rgba(8,18,14,.42);display:none;align-items:center;justify-content:center;z-index:90;padding:20px;backdrop-filter:blur(8px) saturate(140%);-webkit-backdrop-filter:blur(8px) saturate(140%)}
-.modal{background:#fff;border-radius:22px;max-width:560px;width:100%;padding:26px 28px;box-shadow:0 24px 60px rgba(0,40,25,.32);border-top:4px solid var(--navy2);position:relative}
+.modal{background:var(--card);border-radius:22px;max-width:560px;width:100%;padding:26px 28px;box-shadow:0 24px 60px rgba(0,40,25,.32);border-top:4px solid var(--navy2);position:relative}
 .md-title{font-weight:700;color:var(--navy);font-size:1rem;line-height:1.5}
 .md-month{font-size:.8rem;color:var(--navy2);font-weight:700;margin:5px 0 12px;letter-spacing:.3px}
 .md-body{font-size:.9rem;line-height:1.75;max-height:50vh;overflow:auto;color:var(--text)}
@@ -166,6 +205,7 @@ footer{font-size:.76rem;color:var(--muted);text-align:center;margin-top:30px;lin
 .mcell{cursor:pointer}
 .mv{position:relative;background:var(--blue-bg);color:var(--blue);font-weight:700;border-radius:6px;padding:2px 0;font-size:.74rem;text-align:center;border:1px solid #ecd3db}
 .mv:hover{background:#f0dde3}
+[data-theme="dark"] .mv:hover{background:#3a2a30}
 .mv.hasd::after{content:'';position:absolute;top:-3px;right:-3px;width:8px;height:8px;border-radius:50%;background:var(--orange);border:1.5px solid #fff}
 .gcell.gd::after{content:'';position:absolute;top:-4px;right:-3px;width:8px;height:8px;border-radius:50%;background:var(--navy);border:1.5px solid #fff}
 .gcell.gd{position:relative}
@@ -191,6 +231,10 @@ footer{font-size:.76rem;color:var(--muted);text-align:center;margin-top:30px;lin
         <select id="monthSel"></select>
         <div class="asof" id="srcInfo">แหล่งข้อมูล: แผนปฏิบัติการ BCM ปี 2569</div>
       </div>
+      <button id="themeToggle" class="theme-toggle" type="button" aria-label="สลับโหมดมืด/สว่าง" title="สลับโหมดมืด/สว่าง">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.2 19.8l1.7-1.7M18.1 5.9l1.7-1.7"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 14.6A8.5 8.5 0 0 1 9.4 3.5a8.5 8.5 0 1 0 11.1 11.1Z"/></svg>
+      </button>
     </div>
   </div>
 </header>
@@ -528,6 +572,20 @@ function renderKPIs(){
      <div class="sub" style="margin-top:6px">เสร็จสิ้น · อยู่ระหว่างดำเนินการ · ยังไม่ดำเนินการ/ไม่ระบุ</div></div>`;
 }
 
+function chartTheme(){
+  const dark=document.documentElement.getAttribute('data-theme')==='dark';
+  return dark?{grid:'rgba(255,255,255,.08)',tick:'#cbbfae',legend:'#e7ded4'}:{grid:'#eef1f5',tick:'#5c5449',legend:'#3a332c'};
+}
+function bindThemeToggle(){
+  const btn=document.getElementById('themeToggle'); if(!btn)return;
+  btn.addEventListener('click',()=>{
+    const cur=document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';
+    const next=cur==='dark'?'light':'dark';
+    document.documentElement.setAttribute('data-theme',next);
+    try{localStorage.setItem('bcm_theme',next);}catch(e){}
+    renderAll();
+  });
+}
 function renderScurve(){
   const labels=MONTHS.map(m=>m);
   const plan=MONTHS.map((_,i)=>Math.round(overall(i,false)*100)/100);
@@ -540,11 +598,11 @@ function renderScurve(){
     {label:'เป้าหมายสะสม (แผน)',data:plan,borderColor:'#eba978',borderDash:[6,4],pointRadius:3,pointBackgroundColor:'#eba978',tension:.3,fill:false},
     {label:'ผลงานสะสม (จริง)',data:act,borderColor:'#b17f92',backgroundColor:'rgba(177,127,146,.10)',pointRadius:4,pointBackgroundColor:'#b17f92',tension:.3,fill:true,spanGaps:false}]},
    options:{maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
-    plugins:{legend:{labels:{font:{family:'Sarabun',size:12}}},
+    plugins:{legend:{labels:{font:{family:'Sarabun',size:12},color:chartTheme().legend}},
      tooltip:{titleFont:{family:'Sarabun'},bodyFont:{family:'Sarabun'},callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y??'–'}%`}},
      annotation:undefined},
-    scales:{y:{min:0,max:100,ticks:{callback:v=>v+'%',font:{family:'Sarabun'}},grid:{color:'#eef1f5'}},
-     x:{ticks:{font:{family:'Sarabun'}},grid:{display:false}}}}});
+    scales:{y:{min:0,max:100,ticks:{callback:v=>v+'%',font:{family:'Sarabun'},color:chartTheme().tick},grid:{color:chartTheme().grid}},
+     x:{ticks:{font:{family:'Sarabun'},color:chartTheme().tick},grid:{display:false}}}}});
 }
 
 function renderBar(){
@@ -558,12 +616,12 @@ function renderBar(){
     {label:'เป้าหมาย',data:t,backgroundColor:'#eba978',borderRadius:4,barPercentage:.85},
     {label:'ผลงาน',data:v,backgroundColor:'#b17f92',borderRadius:4,barPercentage:.85}]},
    options:{indexAxis:'y',maintainAspectRatio:false,
-    plugins:{legend:{labels:{font:{family:'Sarabun',size:12}}},
+    plugins:{legend:{labels:{font:{family:'Sarabun',size:12},color:chartTheme().legend}},
      tooltip:{titleFont:{family:'Sarabun'},bodyFont:{family:'Sarabun'},
       callbacks:{title:items=>{const a=ACTIVITIES[items[0].dataIndex];return 'กิจกรรมที่ '+a.id+' '+a.name.slice(0,60)+(a.name.length>60?'…':'');},
                  label:c=>` ${c.dataset.label}: ${c.parsed.x??'–'}%`}}},
-    scales:{x:{min:0,max:100,ticks:{callback:v=>v+'%',font:{family:'Sarabun'}},grid:{color:'#eef1f5'}},
-     y:{ticks:{font:{family:'Sarabun',size:11}},grid:{display:false}}}}});
+    scales:{x:{min:0,max:100,ticks:{callback:v=>v+'%',font:{family:'Sarabun'},color:chartTheme().tick},grid:{color:chartTheme().grid}},
+     y:{ticks:{font:{family:'Sarabun',size:11},color:chartTheme().tick},grid:{display:false}}}}});
 }
 
 function ganttHTML(a){
@@ -686,6 +744,7 @@ function init(){
   curM=def; sel.value=def;
   sel.addEventListener('change',e=>{curM=parseInt(e.target.value);renderAll();});
   bindModal();
+  bindThemeToggle();
   renderAll();
 }
 
