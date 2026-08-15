@@ -329,7 +329,7 @@ footer{font-size:.76rem;color:var(--muted);text-align:center;margin-top:30px;lin
 const MONTHS=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 const YEAR_BE=2569;
 // plan: เป้าหมายสะสมรายเดือนของกิจกรรม (% ของกิจกรรม, null = ยังไม่เริ่ม/คงค่าก่อนหน้า)
-const ACTIVITIES=[
+const FALLBACK_ACTIVITIES=[
  {id:1, w:5,  name:'การทบทวนคณะผู้บริหาร/คณะทำงานในระบบ BCMS และผู้ประสานงาน',
   output:'รายชื่อคณะผู้บริหาร/คณะทำงานในระบบ BCMS และผู้ประสานงาน',
   plan:[100,null,null,null,null,null,null,null,null,null,null,null],
@@ -430,6 +430,7 @@ const ACTIVITIES=[
         ['12.3 รายงานความคืบหน้าต่อ Champion และปรับปรุงข้อมูล','000000000011','000000000000'],
         ['12.4 นำข้อมูลเข้าระบบ SE-AM IT','000000000001','000000000000']]}
 ];
+let ACTIVITIES=FALLBACK_ACTIVITIES; // จะถูกแทนที่ด้วยข้อมูลจาก Excel/CSV ถ้ามีข้อมูลแผนครบถ้วน
 
 /* ================= ผลงานจริง (โหลดจาก CSV) =================
    รูปแบบไฟล์ data/BCM_Dashboard.csv (export จาก SharePoint List):
@@ -487,6 +488,12 @@ function loadActual(text){
   const monthCols=[]; // [ตำแหน่งคอลัมน์, เดือน 0-11] — รองรับทั้ง "A_ม.ค.69" และ "ม.ค.69"
   h.forEach((c,j)=>{const name=c.replace(/^[ad]_/,'');
     if(!c.includes('70')&&!/month/.test(c)){for(const k in THM){if(name.startsWith(k)){monthCols.push([j,THM[k]-1]);break;}}}});
+  // แผนงาน (ล็อกจาก Excel 100%): คอลัมน์ T_ม.ค.69 ... T_ธ.ค.69, Weight, Activity, Output
+  const iW=h.findIndex(c=>c==='weight'), iAct=h.findIndex(c=>c==='activity'), iOut=h.findIndex(c=>c==='output');
+  const planColByM={};
+  h.forEach((c,j)=>{if(c.startsWith('t_')){const name=c.slice(2);
+    for(const k in THM){if(name.startsWith(k)){planColByM[THM[k]-1]=j;break;}}}});
+  const PM={}, PS={}; // PM[id]={w,name,output,plan:[12]}  PS[id]=[[sx,fullName,bits]]
   if(iA>=0&&monthCols.length){
     for(let r=1;r<rows.length;r++){const c=rows[r]; if(!c[iA])continue;
       if((c[iA]||'').trim()==='รายงานเดือน')continue;
@@ -497,6 +504,10 @@ function loadActual(text){
         const sid=id+'.'+sx; SUB[sid]={st,note,issue};
         for(const [j,mi] of monthCols){const raw=(c[j]??'').toString().trim();
           if(raw!==''){SUBM[sid]=SUBM[sid]||{}; SUBM[sid][mi]=raw;}}
+        let bits=''; for(let mi=0;mi<12;mi++){const j=planColByM[mi];
+          bits+=(j!=null&&(c[j]||'').toString().trim()!=='')?'1':'0';}
+        const fullName=iAct>=0?(c[iAct]||'').trim():sid;
+        PS[id]=PS[id]||[]; PS[id].push([sx,fullName,bits]);
         n++; continue;}
       if(id<1||id>12)continue;
       ACTUAL[id]=ACTUAL[id]||{}; let lastM=0;
@@ -509,6 +520,21 @@ function loadActual(text){
           if(v<=1.0&&v>0&&!Number.isInteger(v))v*=100;}
         ACTUAL[id][mi]={v,d,note:'',issue:'',st:''}; if(mi>lastM)lastM=mi; n++;}
       ACTUAL[id][lastM]=Object.assign(ACTUAL[id][lastM]||{v:null,d:''},{note,issue,st});
+      const w=iW>=0?parseFloat(c[iW]):NaN, name=iAct>=0?(c[iAct]||'').trim():'', output=iOut>=0?(c[iOut]||'').trim():'';
+      const planArr=new Array(12).fill(null);
+      for(let mi=0;mi<12;mi++){const j=planColByM[mi]; if(j==null)continue;
+        const raw=(c[j]||'').toString().trim(); if(raw===''){continue;}
+        const v2=parseFloat(raw); if(!isNaN(v2))planArr[mi]=v2;}
+      if(!isNaN(w)&&name)PM[id]={w,name,output,plan:planArr};
+    }
+    // ล็อกแผนทั้งหมดจาก Excel ถ้าข้อมูลครบถ้วนสมเหตุสมผล (น้ำหนักรวม ~100)
+    const ids=Object.keys(PM).map(Number).sort((x,y)=>x-y);
+    let wsum=0; ids.forEach(id=>wsum+=(PM[id].w||0));
+    if(ids.length>0&&wsum>=90&&wsum<=110){
+      ACTIVITIES=ids.map(id=>{
+        const subsArr=(PS[id]||[]).sort((x,y)=>x[0]-y[0]).map(([sx,fullName,bits])=>[fullName,bits,'000000000000']);
+        return{id,w:PM[id].w,name:PM[id].name,output:PM[id].output,plan:PM[id].plan,subs:subsArr};
+      });
     }
     return n>0;
   }
