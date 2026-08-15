@@ -122,7 +122,6 @@ tr.open .caret{transform:rotate(90deg)}
 .chip.late{background:var(--red-bg);color:var(--red);border-color:#f3cac5}
 table.gantt tr.late-row td.gname{box-shadow:inset 3px 0 0 var(--red);font-weight:600}
 .latecard{border-left:4px solid var(--red)}
-#reportCard h2{color:var(--navy)}
 .reportbox{white-space:pre-wrap;font-size:.9rem;line-height:1.65;color:var(--text);background:var(--orange-soft);border:1px solid var(--line);border-left:4px solid var(--navy);border-radius:16px;padding:14px 16px;min-height:96px}
 .reportbox.empty{color:var(--muted);font-style:italic;background:#f8fafc;border-left-color:var(--line)}
 [data-theme="dark"] .reportbox.empty{background:#242019}
@@ -292,7 +291,6 @@ footer{font-size:.76rem;color:var(--muted);text-align:center;margin-top:30px;lin
       <div id="lateBody"></div>
     </div>
     <div class="card tilt" id="reportCard" style="--i:3">
-      <h2 id="reportTitle">รายงานประจำเดือน</h2>
       <div class="desc">สรุปภาพรวมการทำงานประจำเดือน (คีย์จากเทมเพลต Excel ชีต "รายงานเดือน")</div>
       <div id="reportBody" class="reportbox empty"></div>
     </div>
@@ -736,8 +734,7 @@ function renderLate(){
   el.innerHTML=h+'</ul>';
 }
 function renderReport(){
-  const t=document.getElementById('reportTitle'),b=document.getElementById('reportBody'); if(!t||!b)return;
-  t.textContent=`รายงานประจำเดือน ${MONTHS_FULL[curM]} ${YEAR_BE}`;
+  const b=document.getElementById('reportBody'); if(!b)return;
   const txt=(MONTHLY[curM]||'').trim();
   if(txt){b.className='reportbox';b.textContent=txt;}
   else{b.className='reportbox empty';b.textContent='— ยังไม่มีรายงานสรุปสำหรับเดือนนี้ —';}
