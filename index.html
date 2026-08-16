@@ -129,13 +129,6 @@ tr.open .caret{transform:rotate(90deg)}
 .chip.b{background:var(--amber-bg);color:#8a5a12;border-color:#f0d9a8}
 .chip.late{background:var(--red-bg);color:var(--red);border-color:#f3cac5}
 table.gantt tr.late-row td.gname{box-shadow:inset 3px 0 0 var(--red);font-weight:600}
-.latecard{border-left:4px solid var(--red)}
-.latelist{list-style:none;margin:8px 0 0;padding:0}
-.latelist li{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:9px 13px;border:1px solid #f3cac5;background:var(--red-bg);border-radius:14px;margin-bottom:8px;font-size:.83rem}
-.latelist .lt-name{color:var(--navy);font-weight:600}
-.latelist .lt-sub{color:var(--muted);font-weight:400;font-size:.74rem}
-.latelist .lt-meta{color:var(--red);font-weight:700;white-space:nowrap;font-size:.77rem;text-align:right}
-.lateempty{font-size:.85rem;color:var(--green);background:var(--green-bg);border:1px solid #cfe3c9;padding:11px 14px;border-radius:14px}
 .wchip{background:#f3ede6;color:var(--navy);font-weight:700;border-radius:8px;padding:3px 9px;font-size:.78rem;border:1px solid var(--line)}
 [data-theme="dark"] .wchip{background:#332c25}
 
@@ -315,12 +308,6 @@ table.gantt td{position:relative}
     </div>
   </div>
 
-  <!-- รายการล่าช้า -->
-  <div class="card latecard tilt" id="lateCard" style="--i:2">
-    <h2>⚠ กิจกรรมย่อยที่ล่าช้ากว่าแผน</h2>
-    <div class="desc" id="lateDesc">รายการที่เลยช่วงเวลาตามแผน (Gantt) มาแล้ว แต่สถานะยังไม่ "เสร็จสิ้น" ณ เดือนที่เลือก</div>
-    <div id="lateBody"></div>
-  </div>
 
   <!-- Activity table -->
   <div class="card tilt" style="--i:4">
@@ -760,18 +747,6 @@ function isDoneBy(act,m){for(let i=0;i<=m;i++)if(act[i]==='2')return true;return
 // ล่าช้า = เลยเดือนสุดท้ายตามแผนแล้ว "และ" ยังไม่เคยรายงานเสร็จสิ้นเลยจนถึงเดือนนี้
 // (ถ้าเดือนก่อนหน้าเป็น "อยู่ระหว่างดำเนินการ" แล้วเดือนนี้ "เสร็จสิ้น" ถือว่าไม่ล่าช้า ไม่ต้องเสร็จครบทุกเดือนตามแผน)
 function isLateSub(plan,act,m){const last=lastPlannedMonth(plan);if(last<0)return false;if(isDoneBy(act,m))return false;return m>last;}
-function lateSubs(m){const out=[];for(const a of ACTIVITIES){for(const [nm,plan,actEmb] of a.subs){const act=effAct(nm.split(' ')[0],actEmb);if(isLateSub(plan,act,m)){const last=lastPlannedMonth(plan);out.push({aid:a.id,nm,last,pc:cnt1(plan),acc:cntDone(act),months:m-last});}}}return out;}
-function renderLate(){
-  const card=document.getElementById('lateCard'),el=document.getElementById('lateBody'); if(!card||!el)return;
-  card.style.display='';
-  const list=lateSubs(curM).sort((a,b)=>b.months-a.months);
-  if(!list.length){el.innerHTML=`<div class="lateempty">\u2713 ไม่มีกิจกรรมย่อยที่ล่าช้ากว่าแผน ณ ${MONTHS[curM]} ${YEAR_BE}</div>`;return;}
-  let h='<ul class="latelist">';
-  for(const it of list){
-    h+=`<li><span class="lt-name">${it.nm} <span class="lt-sub">(กิจกรรมที่ ${it.aid})</span></span><span class="lt-meta">ครบกำหนด ${MONTHS[it.last]} · ทำแล้ว ${it.acc}/${it.pc} เดือนตามแผน · เลยมา ${it.months} เดือน</span></li>`;
-  }
-  el.innerHTML=h+'</ul>';
-}
 function marqueeCls(a,m){ // ย่อสถานะเทียบแผนเหลือ 3 กลุ่ม: 1.g=ตามแผน 2.n=ยังไม่ถึงกำหนด 3.r=เกินกว่าแผน
   const s=status(a,m);
   if(s.cls==='n')return'n';
@@ -787,7 +762,7 @@ function renderMarquee(){
   const set=ACTIVITIES.map(chip).join('');
   el.innerHTML=set+set; // ทำซ้ำเนื้อหาให้เท่ากันเป๊ะ 2 ชุด เพื่อให้ translateX(-50%) วนลูปได้ต่อเนื่องไม่มีรอยต่อ
 }
-function renderAll(){renderKPIs();renderMarquee();renderScurve();renderBar();renderLate();renderTable();}
+function renderAll(){renderKPIs();renderMarquee();renderScurve();renderBar();renderTable();}
 
 /* ---- Popup รายละเอียดรายเดือน ---- */
 const esc=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\n/g,'<br>');
