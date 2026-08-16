@@ -679,7 +679,7 @@ function renderBar(){
 }
 
 function ganttHTML(a){
-  const done=a.subs.filter(([nm])=>(SUB[nm.split(' ')[0]]||{}).st===WS_DONE).length;
+  const done=a.subs.filter(([nm])=>subStatusAt(nm.split(' ')[0],curM)===WS_DONE).length;
   const cnt=Object.keys(SUB).length?` · เสร็จสิ้น ${done}/${a.subs.length} รายการ`:'';
   let h=`<div class="gtitle">กิจกรรมย่อย: <b>แท่งบน</b> <span style="color:#eba978">ส้ม</span>=เป้าหมายตามแผน · <b>แท่งล่าง</b> <span style="color:#b17f92">ม่วง</span>=เสร็จสิ้น (จาง=อยู่ระหว่างดำเนินการ) · แถวขีดแดง=ล่าช้ากว่าแผน · ช่องที่มีจุด ● คลิกดูรายละเอียด</div><table class="gantt"><tr><th class="gname"></th>`;
   MONTHS.forEach((m,i)=>h+=`<th${i===curM?' style="color:var(--navy);font-weight:700"':''}>${m}</th>`);
@@ -703,7 +703,8 @@ function ganttHTML(a){
     h+=`<tr${late?' class="late-row"':''}><td class="gname">${nm}${noteLine}</td>`;
     for(let i=0;i<12;i++){const hasD=!!sm[i], p=plan[i]==='1', ac=act[i]==='2', acMid=act[i]==='1';
       h+=`<td><div class="g2 ${i===curM?'now':''} ${hasD?'mcell gd':''}"${hasD?` data-sub="${sid}" data-m="${i}" title="คลิกดูรายละเอียด"`:''}><div class="gp ${p?'on':''}"></div><div class="ga ${ac?'on':''} ${acMid?'mid':''}"></div></div></td>`;}
-    h+=`<td style="text-align:center">${late?`<span class="chip late">⚠ ล่าช้า</span>`:(s&&s.st?wsChip(s.st):'<span class="chip n">–</span>')}</td></tr>`;
+    const curStatus=subStatusAt(sid,curM)||(s&&s.st)||'';
+    h+=`<td style="text-align:center">${late?`<span class="chip late">⚠ ล่าช้า</span>`:(curStatus?wsChip(curStatus):'<span class="chip n">–</span>')}</td></tr>`;
   }
   h+='</table>';
   const note=lastInfo(a.id,curM,'note'), issue=lastInfo(a.id,curM,'issue');
@@ -744,6 +745,11 @@ function effAct(sid,emb){if(!hasActual)return emb;const sm=SUBM[sid]||{};let b="
     else b+='0';}
   return b;}
 function isDoneBy(act,m){for(let i=0;i<=m;i++)if(act[i]==='2')return true;return false;}
+// สถานะล่าสุดของกิจกรรมย่อย ณ เดือน m โดยยึดตามบันทึกรายเดือน (คอลัมน์ A_) เป็นหลัก
+// เพราะเป็นข้อมูลละเอียด/อัปเดตล่าสุดกว่าคอลัมน์ Status เดี่ยว ๆ ที่อาจไม่ตรงกับบันทึกรายเดือน
+function subStatusAt(sid,m){const sm=SUBM[sid]||{};let r=null;
+  for(let i=0;i<=m;i++){if(sm[i]!=null&&sm[i]!=='')r=sm[i];}
+  return r;}
 // ล่าช้า = เลยเดือนสุดท้ายตามแผนแล้ว "และ" ยังไม่เคยรายงานเสร็จสิ้นเลยจนถึงเดือนนี้
 // (ถ้าเดือนก่อนหน้าเป็น "อยู่ระหว่างดำเนินการ" แล้วเดือนนี้ "เสร็จสิ้น" ถือว่าไม่ล่าช้า ไม่ต้องเสร็จครบทุกเดือนตามแผน)
 function isLateSub(plan,act,m){const last=lastPlannedMonth(plan);if(last<0)return false;if(isDoneBy(act,m))return false;return m>last;}
