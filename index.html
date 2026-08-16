@@ -743,7 +743,10 @@ function effAct(sid,emb){if(!hasActual)return emb;const sm=SUBM[sid]||{};let b="
     else if(v===WS_DOING)b+='1';
     else b+='0';}
   return b;}
-function isLateSub(plan,act,m){const last=lastPlannedMonth(plan);if(last<0)return false;return m>last&&cntDone(act)<cnt1(plan);}
+function isDoneBy(act,m){for(let i=0;i<=m;i++)if(act[i]==='2')return true;return false;}
+// ล่าช้า = เลยเดือนสุดท้ายตามแผนแล้ว "และ" ยังไม่เคยรายงานเสร็จสิ้นเลยจนถึงเดือนนี้
+// (ถ้าเดือนก่อนหน้าเป็น "อยู่ระหว่างดำเนินการ" แล้วเดือนนี้ "เสร็จสิ้น" ถือว่าไม่ล่าช้า ไม่ต้องเสร็จครบทุกเดือนตามแผน)
+function isLateSub(plan,act,m){const last=lastPlannedMonth(plan);if(last<0)return false;if(isDoneBy(act,m))return false;return m>last;}
 function lateSubs(m){const out=[];for(const a of ACTIVITIES){for(const [nm,plan,actEmb] of a.subs){const act=effAct(nm.split(' ')[0],actEmb);if(isLateSub(plan,act,m)){const last=lastPlannedMonth(plan);out.push({aid:a.id,nm,last,pc:cnt1(plan),acc:cntDone(act),months:m-last});}}}return out;}
 function renderLate(){
   const card=document.getElementById('lateCard'),el=document.getElementById('lateBody'); if(!card||!el)return;
