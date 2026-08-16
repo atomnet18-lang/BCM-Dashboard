@@ -41,7 +41,6 @@ header::before{content:'';position:absolute;left:0;right:0;top:0;height:1px;back
 .htitle h1{font-size:1.4rem;font-weight:700;letter-spacing:.3px}
 .htitle p{font-size:.9rem;opacity:.72;margin-top:4px;font-weight:300;letter-spacing:.4px}
 .dept{font-size:.95rem;font-weight:600;color:#ffd9ad;letter-spacing:.6px;margin-bottom:3px}
-.badge-iso{display:inline-block;background:rgba(255,255,255,.16);backdrop-filter:blur(12px) saturate(160%);-webkit-backdrop-filter:blur(12px) saturate(160%);border:1px solid rgba(255,255,255,.4);box-shadow:inset 0 1px 0 rgba(255,255,255,.32);color:#fff1e6;font-size:.72rem;padding:4px 16px;border-radius:999px;margin-top:10px;font-weight:600;letter-spacing:1.2px}
 .hbrand{display:flex;align-items:center;gap:18px}
 .hlogo{width:70px;height:70px;border-radius:50%;background:#fff;padding:5px;box-shadow:0 2px 10px rgba(0,0,0,.28);flex:none;object-fit:contain}
 .hctrl{display:flex;align-items:center;gap:10px}
@@ -67,7 +66,6 @@ select#monthSel:focus-visible{outline:2px solid #fff;outline-offset:3px;backgrou
 .theme-switch input[type="checkbox"]:checked:hover{background:rgba(51,43,37,.66)}
 .theme-switch input[type="checkbox"]:checked::before{transform:translateX(19px);background:#332b25}
 .theme-switch input[type="checkbox"]:focus-visible{outline:2px solid #fff;outline-offset:3px}
-.asof{font-size:.74rem;opacity:.65;text-align:right;margin-top:8px;letter-spacing:.2px}
 
 /* ===== KPI cards ===== */
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(195px,1fr));gap:16px;margin:26px 0}
@@ -224,7 +222,6 @@ footer{font-size:.76rem;color:var(--muted);text-align:center;margin-top:30px;lin
   header{backdrop-filter:none;-webkit-backdrop-filter:none;background:linear-gradient(120deg,#332b25 0%,#4a4038 100%)}
   header::before{display:none}
   select#monthSel{backdrop-filter:none;-webkit-backdrop-filter:none;background:var(--card);color:var(--navy);box-shadow:var(--shadow)}
-  .badge-iso{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(255,255,255,.18)}
   .md-close{backdrop-filter:none;-webkit-backdrop-filter:none;background:#4a4038}
   .modal-bg{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(15,23,42,.6)}
   .theme-switch input[type="checkbox"]{backdrop-filter:none;-webkit-backdrop-filter:none;background:var(--card)}
@@ -233,7 +230,6 @@ footer{font-size:.76rem;color:var(--muted);text-align:center;margin-top:30px;lin
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
   header{background:linear-gradient(120deg,#332b25 0%,#4a4038 100%)}
   select#monthSel{background:var(--card);color:var(--navy);box-shadow:var(--shadow)}
-  .badge-iso{background:rgba(255,255,255,.18)}
   .md-close{background:#4a4038}
   .modal-bg{background:rgba(15,23,42,.6)}
   .theme-switch input[type="checkbox"]{background:var(--card)}
@@ -275,14 +271,12 @@ footer{font-size:.76rem;color:var(--muted);text-align:center;margin-top:30px;lin
         <div class="dept">ฝ่ายบริหารความเสี่ยงองค์กร</div>
         <h1>Dashboard แผนปฏิบัติการบริหารความต่อเนื่องทางธุรกิจ (BCM)</h1>
         <p>ปีงบประมาณ 2569 · ระบบบริหารความต่อเนื่องทางธุรกิจ (BCMS)</p>
-        <span class="badge-iso">ISO 22301</span>
       </div>
     </div>
     <div class="hctrl">
       <div>
         <label for="monthSel">ข้อมูล ณ เดือน</label><br>
         <select id="monthSel"></select>
-        <div class="asof" id="srcInfo">แหล่งข้อมูล: แผนปฏิบัติการ BCM ปี 2569</div>
       </div>
       <label class="theme-switch">
         <span class="ts-label">โหมดมืด</span>
@@ -852,10 +846,7 @@ function init(){
 
 fetch('data/BCM_Dashboard.csv',{cache:'no-store'})
  .then(r=>{if(!r.ok)throw 0;return r.text();})
- .then(t=>{hasActual=loadActual(t);
-   document.getElementById('srcInfo').textContent=hasActual
-     ?'แหล่งข้อมูล: แผน BCM 2569 + ผลงานจริง (MS Lists → GitHub)'
-     :'แหล่งข้อมูล: แผนปฏิบัติการ BCM ปี 2569 (ยังไม่มีไฟล์ผลงานจริง)';})
+ .then(t=>{hasActual=loadActual(t);})
  .catch(()=>{})
  .finally(init);
 </script>
