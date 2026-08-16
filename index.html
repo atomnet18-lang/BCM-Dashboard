@@ -204,6 +204,10 @@ table.gantt td{position:relative}
 .hmdot.g{background:#8fd18a}
 .hmdot.n{background:#e3d9cb}
 .hmdot.r{background:#f0897a}
+.hmst{font-weight:600;opacity:.92}
+.hmst.g{color:#a8e0a3}
+.hmst.n{color:#e3d9cb}
+.hmst.r{color:#f5a99c}
 @media (prefers-reduced-motion:reduce){
   .hmarquee-track{animation:none}
   .hmarquee-wrap{overflow-x:auto;-webkit-mask-image:none;mask-image:none}
@@ -785,17 +789,18 @@ function renderLate(){
   }
   el.innerHTML=h+'</ul>';
 }
-function marqueeCls(a,m){ // ย่อสถานะเทียบแผนเหลือ 3 กลุ่ม: g=ตามแผน(1) n=ยังไม่ถึงกำหนด(2) r=เกินกว่าแผน(3)
+function marqueeCls(a,m){ // ย่อสถานะเทียบแผนเหลือ 3 กลุ่ม: 1.g=ตามแผน 2.n=ยังไม่ถึงกำหนด 3.r=เกินกว่าแผน
   const s=status(a,m);
   if(s.cls==='n')return'n';
   if(s.cls==='g')return'g';
   return'r'; // a (ล่าช้าเล็กน้อย) / r (ล่าช้า) / b (รอรายงานผล) รวมเป็นกลุ่มเดียว
 }
+function marqueeLabel(cls){return cls==='n'?'ยังไม่ถึงกำหนด':cls==='g'?'ตามแผน':'เกินกว่าแผน';}
 function renderMarquee(){
   const el=document.getElementById('marqueeTrack'); if(!el)return;
   const chip=a=>{const cls=marqueeCls(a,curM);
     const nm=a.name.length>26?a.name.slice(0,26)+'…':a.name;
-    return `<div class="hmchip"><i class="hmdot ${cls}"></i><b>กิจกรรมที่ ${a.id}</b> ${(nm||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div>`;};
+    return `<div class="hmchip"><i class="hmdot ${cls}"></i><b>กิจกรรมที่ ${a.id}</b> ${(nm||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')} <span class="hmst ${cls}">: ${marqueeLabel(cls)}</span></div>`;};
   const set=ACTIVITIES.map(chip).join('');
   el.innerHTML=set+set; // ทำซ้ำเนื้อหาให้เท่ากันเป๊ะ 2 ชุด เพื่อให้ translateX(-50%) วนลูปได้ต่อเนื่องไม่มีรอยต่อ
 }
