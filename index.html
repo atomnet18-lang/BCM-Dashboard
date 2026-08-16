@@ -152,10 +152,12 @@ table.gantt td.gname{text-align:left;color:var(--text);padding-right:10px}
 [data-theme="dark"] .g2 .gp,[data-theme="dark"] .g2 .ga{background:#3a332c}
 .g2 .gp.on{background:linear-gradient(180deg,#f5cba0,#eba978)}
 .g2 .ga.on{background:linear-gradient(180deg,#dcb0bf,#b17f92)}
+.g2 .ga.mid{background:linear-gradient(180deg,#dcb0bf,#b17f92);opacity:.45}
 .g2.now{outline:2px solid var(--navy);outline-offset:1px}
 @keyframes barblink{0%,100%{opacity:1}50%{opacity:.3}}
 .g2.now .gp.on,.g2.now .ga.on{animation:barblink 1.1s ease-in-out infinite}
-@media (prefers-reduced-motion:reduce){.g2.now .gp.on,.g2.now .ga.on{animation:none}}
+.g2.now .ga.mid{animation:barblink 1.1s ease-in-out infinite;opacity:.45}
+@media (prefers-reduced-motion:reduce){.g2.now .gp.on,.g2.now .ga.on,.g2.now .ga.mid{animation:none}}
 .g2.gd{cursor:pointer}
 .g2.gd::after{content:"";position:absolute;width:4px;height:4px;border-radius:50%;background:var(--navy);margin:-9px auto 0;display:block;opacity:.55}
 table.gantt td{position:relative}
@@ -679,7 +681,7 @@ function renderBar(){
 function ganttHTML(a){
   const done=a.subs.filter(([nm])=>(SUB[nm.split(' ')[0]]||{}).st===WS_DONE).length;
   const cnt=Object.keys(SUB).length?` · เสร็จสิ้น ${done}/${a.subs.length} รายการ`:'';
-  let h=`<div class="gtitle">กิจกรรมย่อย: <b>แท่งบน</b> <span style="color:#eba978">ส้ม</span>=เป้าหมายตามแผน · <b>แท่งล่าง</b> <span style="color:#b17f92">ม่วง</span>=ผลปฏิบัติงานจริง · แถวขีดแดง=ล่าช้ากว่าแผน · ช่องที่มีจุด ● คลิกดูรายละเอียด</div><table class="gantt"><tr><th class="gname"></th>`;
+  let h=`<div class="gtitle">กิจกรรมย่อย: <b>แท่งบน</b> <span style="color:#eba978">ส้ม</span>=เป้าหมายตามแผน · <b>แท่งล่าง</b> <span style="color:#b17f92">ม่วง</span>=เสร็จสิ้น (จาง=อยู่ระหว่างดำเนินการ) · แถวขีดแดง=ล่าช้ากว่าแผน · ช่องที่มีจุด ● คลิกดูรายละเอียด</div><table class="gantt"><tr><th class="gname"></th>`;
   MONTHS.forEach((m,i)=>h+=`<th${i===curM?' style="color:var(--navy);font-weight:700"':''}>${m}</th>`);
   h+='<th style="width:120px">สถานะ</th></tr>';
   // แถวผลการดำเนินงานรายเดือนของกิจกรรมหลัก (คลิกดูรายละเอียด)
@@ -699,8 +701,8 @@ function ganttHTML(a){
       ?`<div style="font-size:.72rem;color:var(--muted);margin-top:2px">${s.note?'▸ '+s.note:''}${s.issue?' <span style="color:var(--amber)">⚠ '+s.issue+'</span>':''}</div>`:'';
     const late=isLateSub(plan,act,curM);
     h+=`<tr${late?' class="late-row"':''}><td class="gname">${nm}${noteLine}</td>`;
-    for(let i=0;i<12;i++){const hasD=!!sm[i], p=plan[i]==='1', ac=act[i]==='1';
-      h+=`<td><div class="g2 ${i===curM?'now':''} ${hasD?'mcell gd':''}"${hasD?` data-sub="${sid}" data-m="${i}" title="คลิกดูรายละเอียด"`:''}><div class="gp ${p?'on':''}"></div><div class="ga ${ac?'on':''}"></div></div></td>`;}
+    for(let i=0;i<12;i++){const hasD=!!sm[i], p=plan[i]==='1', ac=act[i]==='2', acMid=act[i]==='1';
+      h+=`<td><div class="g2 ${i===curM?'now':''} ${hasD?'mcell gd':''}"${hasD?` data-sub="${sid}" data-m="${i}" title="คลิกดูรายละเอียด"`:''}><div class="gp ${p?'on':''}"></div><div class="ga ${ac?'on':''} ${acMid?'mid':''}"></div></div></td>`;}
     h+=`<td style="text-align:center">${late?`<span class="chip late">⚠ ล่าช้า</span>`:(s&&s.st?wsChip(s.st):'<span class="chip n">–</span>')}</td></tr>`;
   }
   h+='</table>';
@@ -733,9 +735,16 @@ function renderTable(){
 
 function lastPlannedMonth(bits){let last=-1;for(let i=0;i<12;i++)if(bits[i]==='1')last=i;return last;}
 function cnt1(b){let c=0;for(let i=0;i<12;i++)if(b[i]==="1")c++;return c;}
-function effAct(sid,emb){if(!hasActual)return emb;const sm=SUBM[sid]||{};let b="";for(let i=0;i<12;i++)b+=(sm[i]!=null&&sm[i]!=="")?"1":"0";return b;}
-function isLateSub(plan,act,m){const last=lastPlannedMonth(plan);if(last<0)return false;return m>last&&cnt1(act)<cnt1(plan);}
-function lateSubs(m){const out=[];for(const a of ACTIVITIES){for(const [nm,plan,actEmb] of a.subs){const act=effAct(nm.split(' ')[0],actEmb);if(isLateSub(plan,act,m)){const last=lastPlannedMonth(plan);out.push({aid:a.id,nm,last,pc:cnt1(plan),acc:cnt1(act),months:m-last});}}}return out;}
+function cntDone(b){let c=0;for(let i=0;i<12;i++)if(b[i]==="2")c++;return c;}
+// รหัสสถานะรายเดือนของกิจกรรมย่อย: '2'=เสร็จสิ้น '1'=อยู่ระหว่างดำเนินการ '0'=ยังไม่ดำเนินการ/ไม่มีข้อมูล
+function effAct(sid,emb){if(!hasActual)return emb;const sm=SUBM[sid]||{};let b="";
+  for(let i=0;i<12;i++){const v=(sm[i]==null?'':sm[i]).toString().trim();
+    if(v===WS_DONE||v==='ดำเนินการแล้ว')b+='2';
+    else if(v===WS_DOING)b+='1';
+    else b+='0';}
+  return b;}
+function isLateSub(plan,act,m){const last=lastPlannedMonth(plan);if(last<0)return false;return m>last&&cntDone(act)<cnt1(plan);}
+function lateSubs(m){const out=[];for(const a of ACTIVITIES){for(const [nm,plan,actEmb] of a.subs){const act=effAct(nm.split(' ')[0],actEmb);if(isLateSub(plan,act,m)){const last=lastPlannedMonth(plan);out.push({aid:a.id,nm,last,pc:cnt1(plan),acc:cntDone(act),months:m-last});}}}return out;}
 function renderLate(){
   const card=document.getElementById('lateCard'),el=document.getElementById('lateBody'); if(!card||!el)return;
   card.style.display='';
