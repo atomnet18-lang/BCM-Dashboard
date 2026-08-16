@@ -627,9 +627,6 @@ function initTilt(root){
 function renderKPIs(){
   const t=overall(curM,false), v=overall(curM,true);
   const d=v==null?null:v-t;
-  let g=0,a=0,r=0,n=0,wd=0,wg=0,wn=0;
-  ACTIVITIES.forEach(x=>{const s=status(x,curM); if(s.cls==='g')g++;else if(s.cls==='a')a++;else if(s.cls==='r')r++;else n++;
-    const w=workStatus(x.id,curM); if(w===WS_DONE)wd++;else if(w===WS_DOING)wg++;else wn++;});
   const dCls=d==null?'':(d>=0?'good':(d>-5?'warn':'bad'));
   const dTxt=d==null?'–':((d>=0?'+':'')+fmt(d));
   document.getElementById('kpis').innerHTML=`
@@ -638,15 +635,7 @@ function renderKPIs(){
    <div class="kpi tilt" style="--accent:var(--blue);--i:1"><div class="lbl">ผลงานสะสม (ถ่วงน้ำหนัก)</div>
      <div class="val">${fmt(v)}<small> %</small></div><div class="sub">${v==null?'ยังไม่มีข้อมูลผลงานจริง':'จากรายงานผลการดำเนินงาน'}</div></div>
    <div class="kpi tilt ${dCls}" style="--accent:${d==null?'var(--muted)':d>=0?'var(--green)':'var(--red)'};--i:2"><div class="lbl">ผลต่าง (ผลงาน − เป้าหมาย)</div>
-     <div class="val">${dTxt}<small>${d==null?'':' จุด'}</small></div><div class="sub">${d==null?'รอข้อมูลผลงาน':d>=0?'ดำเนินงานเป็นไปตามแผน':'ต่ำกว่าเป้าหมาย'}</div></div>
-   <div class="kpi tilt" style="--accent:var(--green);--i:3"><div class="lbl">สถานะเทียบแผน (12 กิจกรรม)</div>
-     <div class="val" style="font-size:1.25rem;display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
-       <span class="chip g">✓ ${g}</span><span class="chip a">! ${a}</span><span class="chip r">✕ ${r}</span><span class="chip n">○ ${n}</span></div>
-     <div class="sub" style="margin-top:6px">ตามแผน · ล่าช้าเล็กน้อย · ล่าช้า · ยังไม่ถึงกำหนด/รอผล</div></div>
-   <div class="kpi tilt" style="--accent:var(--orange);--i:4"><div class="lbl">สถานะงาน (รายงานโดยผู้รับผิดชอบ)</div>
-     <div class="val" style="font-size:1.25rem;display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
-       <span class="chip g">✓ ${wd}</span><span class="chip b">⟳ ${wg}</span><span class="chip n">○ ${wn}</span></div>
-     <div class="sub" style="margin-top:6px">เสร็จสิ้น · อยู่ระหว่างดำเนินการ · ยังไม่ดำเนินการ/ไม่ระบุ</div></div>`;
+     <div class="val">${dTxt}<small>${d==null?'':' จุด'}</small></div><div class="sub">${d==null?'รอข้อมูลผลงาน':d>=0?'ดำเนินงานเป็นไปตามแผน':'ต่ำกว่าเป้าหมาย'}</div></div>`;
   initTilt(document);
 }
 
