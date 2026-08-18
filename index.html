@@ -82,19 +82,7 @@ select#monthSel:focus-visible{outline:2px solid #fff;outline-offset:3px;backgrou
 .card h2{font-size:1rem;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:9px;margin-bottom:4px;letter-spacing:.2px}
 .card h2::before{content:'';width:4px;height:16px;border-radius:2px;background:var(--navy2);display:inline-block}
 .card .desc{font-size:.78rem;color:var(--muted);margin-bottom:14px}
-.grid2{display:grid;grid-template-columns:1.15fr .85fr;gap:20px}
-@media(max-width:980px){.grid2{grid-template-columns:1fr}}
 .chartbox{position:relative;height:330px}
-.proglist-box{height:330px;overflow-y:auto;padding-right:6px}
-.proglist{display:flex;flex-direction:column;gap:15px}
-.prow{display:grid;grid-template-columns:82px 1fr 44px;align-items:center;gap:12px}
-.prow .plabel{font-size:.78rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:default}
-.ptrack{position:relative;height:13px;border-radius:999px;background:#eef0f4;overflow:visible}
-[data-theme="dark"] .ptrack{background:#3a332c}
-.pfill{height:100%;border-radius:999px;background:linear-gradient(90deg,#dcb0bf,#b17f92);transition:width .5s ease;min-width:2px}
-.pmark{position:absolute;top:-3px;bottom:-3px;width:3px;border-radius:2px;background:var(--orange);box-shadow:0 0 0 2px var(--card)}
-.pval{font-size:.82rem;font-weight:700;color:var(--text);text-align:right;white-space:nowrap;line-height:1.25}
-.pval small{font-weight:500;color:var(--muted);font-size:.64rem;display:block}
 
 /* ===== Table : Clean UI + zebra ===== */
 table.acts{width:100%;border-collapse:collapse;font-size:.88rem}
@@ -295,17 +283,10 @@ table.gantt td{position:relative}
   <div class="kpis" id="kpis"></div>
 
   <!-- Charts -->
-  <div class="grid2">
-    <div class="card tilt" style="--i:0">
-      <h2>ความก้าวหน้าสะสมรายเดือน (S-Curve)</h2>
-      <div class="desc">เป้าหมายสะสมถ่วงน้ำหนักตามแผน เทียบกับผลการดำเนินงานจริง (ร้อยละ)</div>
-      <div class="chartbox"><canvas id="scurve"></canvas></div>
-    </div>
-    <div class="card tilt" style="--i:1">
-      <h2>ความก้าวหน้ารายกิจกรรม</h2>
-      <div class="desc" id="barDesc">เป้าหมาย vs ผลงาน ของแต่ละกิจกรรม (ร้อยละของกิจกรรม)</div>
-      <div class="proglist-box"><div class="proglist" id="progList"></div></div>
-    </div>
+  <div class="card tilt" style="--i:0">
+    <h2>ความก้าวหน้าสะสมรายเดือน (S-Curve)</h2>
+    <div class="desc">เป้าหมายสะสมถ่วงน้ำหนักตามแผน เทียบกับผลการดำเนินงานจริง (ร้อยละ)</div>
+    <div class="chartbox"><canvas id="scurve"></canvas></div>
   </div>
 
 
@@ -664,19 +645,6 @@ function renderScurve(){
      x:{ticks:{font:{family:'Sarabun'},color:chartTheme().tick},grid:{display:false}}}}});
 }
 
-function renderBar(){
-  document.getElementById('barDesc').textContent=`เป้าหมาย vs ผลงานของแต่ละกิจกรรม ณ ${MONTHS[curM]} ${YEAR_BE} (ร้อยละของกิจกรรม) · แถบ = ผลงานจริง · ขีด = เป้าหมายตามแผน`;
-  const el=document.getElementById('progList'); if(!el)return;
-  el.innerHTML=ACTIVITIES.map(a=>{
-    const t=Math.min(Math.max(planAt(a,curM),0),100);
-    const v=actualAt(a.id,curM);
-    const vClamped=Math.min(Math.max(v??0,0),100);
-    const title=(a.name||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;');
-    return `<div class="prow"><div class="plabel" title="${title}">กิจกรรมที่ ${a.id}</div>
-      <div class="ptrack"><div class="pfill" style="width:${vClamped}%"></div><div class="pmark" style="left:${t}%" title="เป้าหมาย ${fmt(t)}%"></div></div>
-      <div class="pval">${v==null?'–':fmt(v)+'%'}<small>เป้า ${fmt(t)}%</small></div></div>`;
-  }).join('');
-}
 
 function ganttHTML(a){
   const done=a.subs.filter(([nm])=>subStatusAt(nm.split(' ')[0],curM)===WS_DONE).length;
@@ -768,7 +736,7 @@ function renderMarquee(){
   const set=ACTIVITIES.map(chip).join('');
   el.innerHTML=set+set; // ทำซ้ำเนื้อหาให้เท่ากันเป๊ะ 2 ชุด เพื่อให้ translateX(-50%) วนลูปได้ต่อเนื่องไม่มีรอยต่อ
 }
-function renderAll(){renderKPIs();renderMarquee();renderScurve();renderBar();renderTable();}
+function renderAll(){renderKPIs();renderMarquee();renderScurve();renderTable();}
 
 /* ---- Popup รายละเอียดรายเดือน ---- */
 const esc=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\n/g,'<br>');
