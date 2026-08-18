@@ -68,7 +68,10 @@ select#monthSel:focus-visible{outline:2px solid #fff;outline-offset:3px;backgrou
 .theme-switch input[type="checkbox"]:focus-visible{outline:2px solid #fff;outline-offset:3px}
 
 /* ===== KPI cards ===== */
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(195px,1fr));gap:16px;margin:26px 0}
+.scurve-row{display:grid;grid-template-columns:2fr 1fr;gap:20px;margin:26px 0;align-items:stretch}
+@media(max-width:980px){.scurve-row{grid-template-columns:1fr}}
+.kpis-col{display:flex;flex-direction:column;gap:16px}
+.kpis-col .kpi{flex:1;display:flex;flex-direction:column;justify-content:center}
 .kpi{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px 20px;position:relative;overflow:hidden;box-shadow:var(--shadow)}
 .kpi::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent,var(--navy))}
 .kpi .lbl{font-size:.78rem;color:var(--muted);font-weight:600;letter-spacing:.2px;text-transform:none}
@@ -82,7 +85,7 @@ select#monthSel:focus-visible{outline:2px solid #fff;outline-offset:3px;backgrou
 .card h2{font-size:1rem;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:9px;margin-bottom:4px;letter-spacing:.2px}
 .card h2::before{content:'';width:4px;height:16px;border-radius:2px;background:var(--navy2);display:inline-block}
 .card .desc{font-size:.78rem;color:var(--muted);margin-bottom:14px}
-.chartbox{position:relative;height:330px}
+.chartbox{position:relative;height:280px}
 
 /* ===== Table : Clean UI + zebra ===== */
 table.acts{width:100%;border-collapse:collapse;font-size:.88rem}
@@ -279,14 +282,14 @@ table.gantt td{position:relative}
 
 <div class="wrap">
 
-  <!-- KPI -->
-  <div class="kpis" id="kpis"></div>
-
-  <!-- Charts -->
-  <div class="card tilt" style="--i:0">
-    <h2>ความก้าวหน้าสะสมรายเดือน (S-Curve)</h2>
-    <div class="desc">เป้าหมายสะสมถ่วงน้ำหนักตามแผน เทียบกับผลการดำเนินงานจริง (ร้อยละ)</div>
-    <div class="chartbox"><canvas id="scurve"></canvas></div>
+  <!-- S-Curve + KPI -->
+  <div class="scurve-row">
+    <div class="card tilt" style="--i:0">
+      <h2>ความก้าวหน้าสะสมรายเดือน (S-Curve)</h2>
+      <div class="desc">เป้าหมายสะสมถ่วงน้ำหนักตามแผน เทียบกับผลการดำเนินงานจริง (ร้อยละ)</div>
+      <div class="chartbox"><canvas id="scurve"></canvas></div>
+    </div>
+    <div class="kpis-col" id="kpis"></div>
   </div>
 
 
